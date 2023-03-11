@@ -1,0 +1,21 @@
+{
+    "Authentication": {
+        "Token": "MTA3NDMwODA0Nzk2ODY3Nzk5OQ.Gs-YVn.O7WqwRcq4voncmH2uTPVYXyAW56EweZ0dqxnn0",
+        "Client_ID": "1074308047968677999"
+    },
+    "Presence": {
+        "Names": ["/info", "/utility", "/settings", "/help"],
+        "Status": "online",
+        "Type": 2
+    },
+    "Database": {
+        "Uri": "mongodb+srv://euni_az3:Cf32JT3XvOwCPhgA@cluster0.wuqry0o.mongodb.net",
+        "Collection": "azury_testers"
+    },
+    "Information": {
+        "Version": "1.0.0"
+    },
+    "Keys": {
+        "Weather": "a36649c8106c46549fa00826232802"
+    }
+}
