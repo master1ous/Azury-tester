@@ -37,7 +37,6 @@ const event: BotEvent = {
         if(message.mentions.members.first()) {
             const mentionedMember = message.mentions.members.first();
             if (mentionedMember?.user.bot) return;
-
             const mentionedAfk = await AfkModel.findOne({ userID: mentionedMember?.id, guildID: message.guild.id });
 
             if(mentionedAfk) message.reply({ content: `💤 **${mentionedMember?.user.username}** ${await client.translate(`is AFK:`, message.guild?.id)} ${mentionedAfk.reason} • <t:${mentionedAfk.created}:R>` })
