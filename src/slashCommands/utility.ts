@@ -340,8 +340,8 @@ const command: SlashCommand = {
                     await interaction.editReply({ content: `Generating ${count} ${plural} with the instruction: ${text}` })
 
                     await axios.post('https://api.replicate.com/v1/predictions', {
-                        "version": "9936c2001faa2194a261c01381f90e65261879985476014a0a37a334593a05eb", // OLD db21e45d3f7023abc2a46ee38a23973f6dce16bb082a930b0c49861f96d1e5bf
-                        "input": { // MIDJOURNEY: 9936c2001faa2194a261c01381f90e65261879985476014a0a37a334593a05eb
+                        "version": "9936c2001faa2194a261c01381f90e65261879985476014a0a37a334593a05eb", 
+                        "input": {
                             "prompt": instruction,
                             "width": size,
                             "height": size,

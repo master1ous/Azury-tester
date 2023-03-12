@@ -1,6 +1,7 @@
 import { Client } from "discord.js";
 import { BotEvent } from "../types";
 import { color } from "../functions";
+import axios from "axios";
 
 const event : BotEvent = {
     name: "ready",

@@ -27,6 +27,36 @@ const command: SlashCommand = {
             .setDescription('Enter a channel to send the embed')
         )
     )
+    .addSubcommand((subcommand) =>
+        subcommand.setName('snipe')
+        .setDescription('Snipe a message')
+        .addIntegerOption(option =>
+            option.setName('msg')
+            .setRequired(false)
+            .setDescription('Enter a message to snipe')
+        )
+        .addChannelOption(option =>
+            option.setName('channel')
+            .addChannelTypes(ChannelType.GuildText, ChannelType.GuildNews)
+            .setRequired(false)
+            .setDescription('Enter a channel to snipe a message')
+        )
+    )
+    .addSubcommand((subcommand) =>
+        subcommand.setName('purge')
+        .setDescription('Purge messages')
+        .addIntegerOption(option =>
+            option.setName('amount')
+            .setRequired(true)
+            .setDescription('Enter an amount of messages to purge')
+        )
+        .addChannelOption(option =>
+            option.setName('channel')
+            .addChannelTypes(ChannelType.GuildText, ChannelType.GuildNews)
+            .setDescription('Which channel to purge in')
+            .setRequired(false)
+        )
+    )
     .addSubcommandGroup((group) => 
         group.setName('user')
         .setDescription('Use the user sub commands')
@@ -70,6 +100,29 @@ const command: SlashCommand = {
                 option.setName('reason')
                 .setRequired(false)
                 .setDescription('Enter a reason for the warn')
+            )
+        )
+        .addSubcommand((subcommand) =>
+            subcommand.setName('warnings')
+            .setDescription('Get a list of warnings for a user')
+            .addUserOption(option =>
+                option.setName('user')
+                .setRequired(true)
+                .setDescription('Enter a user to get warnings for')
+            )
+        )
+        .addSubcommand((subcommand) =>
+            subcommand.setName('unwarn')
+            .setDescription('Unwarn a user in the server')
+            .addUserOption(option =>
+                option.setName('user')
+                .setRequired(true)
+                .setDescription('Enter a user to kick')
+            )
+            .addIntegerOption(option =>
+                option.setName('warning')
+                .setRequired(true)
+                .setDescription('Enter a warning to remove')
             )
         )
     )
@@ -154,9 +207,39 @@ const client = require('../index')
         }
 
         if ((interaction.options as any).getSubcommand() == 'snipe') {
-            await interaction.deferReply({ ephemeral: true })
+            await interaction.deferReply({ ephemeral: false })
+            const channel = (interaction.options as any).getChannel('channel') || interaction.channel
+            const msg = (interaction.options as any).getInteger('msg') || 1;
 
+            const snipes = client.snipe.get(channel.id) || []
+            const snipedmsg = snipes[msg - 1 || 0]
 
+            if (!snipedmsg) return await interaction.editReply({ content: 'There are no messages to snipe' })
+
+            const text = channel ? `Sniped message from **${snipedmsg.author.username}** in **this channel**` : `Sniped message from **${snipedmsg.author.username}** in **${channel.name}**`;
+
+            let images = [] as any;
+
+            const embed = new Discord.EmbedBuilder()
+            .setAuthor({ name: snipedmsg.author.tag, iconURL: snipedmsg.author.displayAvatarURL() })
+            .setDescription(snipedmsg.content)
+            .setFooter({ text: `${msg || 1}/${snipes.length} snipes available - ${snipedmsg.author.id}` })
+            .setColor(await client.embedColor(snipedmsg.author||interaction.user))
+
+            if(snipedmsg.image && snipedmsg.image.length > 0) {
+                snipedmsg.image.forEach((image: any) => {
+                    images.push(`**[\`Click here for image\`](${image})**`)
+                })
+                embed.addFields(
+                    { name: 'User attatchments', value: `${images.join(', ')}` },
+                )
+            }
+
+            embed.addFields(
+                { name: 'Message deletion date', value: `<t:${Math.floor(snipedmsg.timestamp/1000)}:R> (<t:${Math.floor(snipedmsg.timestamp/1000)}:F>)` },
+            )
+
+            await interaction.editReply({ content: `${text}`, embeds: [embed] })
         }
         if ((interaction.options as any).getSubcommand() == 'embedbuilder') {
                 await interaction.deferReply({ ephemeral: true })
@@ -1129,23 +1212,76 @@ const client = require('../index')
             const member = interaction.guild.members.cache.get(user.id);
             if (member) {
                 const data = { reason: reason, moderator: interaction.user.id, date: Math.floor(+Date.now()/1000), id: Math.floor(Math.random() * 100000000000000000) }
-                const warnings = await WarningsModel.findOne({ guildId: interaction.guild.id, userId: user.id })
+                const warnings = await WarningsModel.findOne({ guildID: interaction.guild.id, userID: user.id })
+                let warns = 0;
                 if (warnings) {
                     warnings.warnings.push(data)
                     warnings.save()
+                    warns = warnings.warnings.length
                 } else {
                     new WarningsModel({
                         userID: user.id,
                         guildID: interaction.guild.id,
                         warnings: [data]
                     }).save()
+                    warns = 1
                 }
-                interaction.reply({ content: `Warned ${user.username} for ${reason}, they now have ${warnings.warnings.length + 1} warnings`, ephemeral: true })
+                interaction.reply({ content: `Warned ${user.username} for ${reason}, they now have ${warns} warnings`, ephemeral: true })
 
-                user.send({ content: `You have been warned in ${interaction.guild.name} for ${reason}\nYou now have ${warnings.warnings.length + 1} warnings` }).catch(() => {})
+                user.send({ content: `You have been warned in ${interaction.guild.name} for ${reason}\nYou now have ${warns} warnings` }).catch(() => {})
             } else {
                 interaction.reply({ content: `Couldn't find that user, make sure they are in the server`, ephemeral: true })
             }
+        } else if ((interaction.options as any).getSubcommand() == 'warnings') {
+            const user = (interaction.options as any).getUser('user')
+            const warnings = await WarningsModel.findOne({ guildID: interaction.guild.id, userID: user.id })
+            if(warnings.warnings.length < 1) return interaction.reply({ content: `This user has no warnings`, ephemeral: true })
+            if (warnings) {
+                const embeds = new Discord.EmbedBuilder()
+                .setTitle(`Warnings for ${user.username}`)
+                .setColor(await interaction.client.embedColor(interaction.user))
+                .setTimestamp()
+                .setFooter({ text: `Requested by ${interaction.user.username}`, iconURL: interaction.user.displayAvatarURL() })
+                warnings.warnings.forEach((warning: any) => {
+                    embeds.addFields(
+                        { name: `Warning ${warning.id}`, value: `Reason: ${warning.reason}\nModerator: <@${warning.moderator}>\nDate: <t:${warning.date}:R>` },
+                    )
+                })
+                interaction.reply({ embeds: [embeds] })
+            } else {
+                interaction.reply({ content: `This user has no warnings`, ephemeral: true })
+            }
+        } else if ((interaction.options as any).getSubcommand() == 'unwarn') {
+            const user = (interaction.options as any).getUser('user')
+            const id = (interaction.options as any).getInteger('warning')
+            const warnings = await WarningsModel.findOne({ guildID: interaction.guild.id, userID: user.id })
+            if (warnings) {
+                const warning = warnings.warnings.find((warning: any) => warning.id == id)
+                console.log(warning)
+                if (warning) {
+                    warnings.warnings = warnings.warnings.filter((warning: any) => warning.id != id)
+                    warnings.save()
+                    interaction.reply({ content: `Removed warning ${id} from ${user.username}`, ephemeral: true })
+                } else {
+                    interaction.reply({ content: `This user doesn't have a warning with that id`, ephemeral: true })
+                }
+            } else {
+                interaction.reply({ content: `This user has no warnings`, ephemeral: true })
+            }
+        } else if ((interaction.options as any).getSubcommand() == 'purge') {
+            const amount = (interaction.options as any).getInteger('amount');
+            const channel = (interaction.options as any).getChannel('channel') || interaction.channel;
+
+            if(amount > 100) return interaction.reply({ content: `You cannot purge more than 100 messages due to discord API limit`, ephemeral: true })
+            if(amount < 1) return interaction.reply({ content: `You less than 1 message, as there would be nothing to purge`, ephemeral: true })
+
+            interaction.reply({ content: `Purging ${amount} messages in ${channel.toString()}...`, ephemeral: true })
+
+            await channel.bulkDelete(amount, true).catch((e: any) => {
+                interaction.reply({ content: `I was unable to purge the messages\n\`\`\`${e}\`\`\``, ephemeral: true })
+            })
+
+            await channel.send({ content: 'Purged **'+amount+'** messages by '+interaction.user.toString()})
         }
     }
 }

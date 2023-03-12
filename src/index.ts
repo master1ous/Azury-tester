@@ -17,6 +17,7 @@ module.exports = client;
 
 //require('./levelcard.ts')(client)
 
+client.snipe = new Collection<any, any>()
 client.slashCommands = new Collection<string, SlashCommand>( )
 client.slashCommandsList = new Collection<string, SlashCommandList>( )
 client.cooldowns = new Collection<string, number>()
