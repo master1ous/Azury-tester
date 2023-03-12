@@ -72,6 +72,7 @@ declare module "discord.js" {
         checkURL: Collection<string>,
         checkPremium: Collection<string>,
         openai: Collection<string>,
+        player: Collection<string>,
         pastebin: Collection<string>,
         timestamp: Collection<string>,
         cooldowns: Collection<string, number>

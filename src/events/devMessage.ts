@@ -34,13 +34,13 @@ const event: BotEvent = {
 
             if(data2) {
                 if(data2.categories['sexual'] || data2.categories['sexual/minors'] || data2.categories['violence'] || data2.categories['violence/graphic'] || data2.categories['hate'] || data2.categories['hate/threatening'] || data2.categories['self-harm']){
-                    message.reply({ content: "Your message was flagged against OpenAI policy, please refrain from sending those content." })
+                    message.reply({ content: "Your message was flagged against our policy, please refrain from sending those content." })
                     return;
                 }
             }
 
             if(msg.includes('slur')) {
-                message.reply({ content: "Your message was flagged against OpenAI policy, please refrain from sending those content." })
+                message.reply({ content: "Your message was flagged against our policy, please refrain from sending those content." })
                 return;
             }
 
@@ -76,6 +76,20 @@ const event: BotEvent = {
 
         // Staff stuff
         if(message.member.roles.cache.has("1053299955713974302")) {
+            if(message.content.startsWith("!findmember")) {
+                const args = message.content.split(" ");
+
+                if(!args[1]) return message.reply({ content: "Please specify a user!" })
+                const closest = closestMatch(args[1], client.users.cache.map((user: any) => user.username));
+
+                console.log(closest)
+
+                const user = client.users.cache.find(user => user.username == closest);
+
+                if(!user) return message.reply({ content: "User not found!" })
+
+                message.reply({ content: `Found user: ${user.tag} (${user.id})` })
+            }
             if(message.content.startsWith("!receipt")) {
                 const args = message.content.split(" ");
                 const user = message.mentions.members.first();
@@ -544,5 +558,51 @@ const event: BotEvent = {
         }
     }
 }
+
+function levenshteinDistance(s1: string, s2: string): number {
+    const m = s1.length;
+    const n = s2.length;
+    const d: number[][] = [];
+  
+    for (let i = 0; i <= m; i++) {
+      d[i] = [];
+      d[i][0] = i;
+    }
+  
+    for (let j = 0; j <= n; j++) {
+      d[0][j] = j;
+    }
+  
+    for (let j = 1; j <= n; j++) {
+      for (let i = 1; i <= m; i++) {
+        if (s1[i - 1] === s2[j - 1]) {
+          d[i][j] = d[i - 1][j - 1];
+        } else {
+          d[i][j] = Math.min(
+            d[i - 1][j] + 1,
+            d[i][j - 1] + 1,
+            d[i - 1][j - 1] + 1
+          );
+        }
+      }
+    }
+  
+    return d[m][n];
+  }
+  
+  function closestMatch(str: string, arr: string[]): string {
+    let minDistance = Infinity;
+    let closestStr = '';
+  
+    for (let i = 0; i < arr.length; i++) {
+      const distance = levenshteinDistance(str, arr[i]);
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestStr = arr[i];
+      }
+    }
+  
+    return closestStr;
+  }
 
 export default event

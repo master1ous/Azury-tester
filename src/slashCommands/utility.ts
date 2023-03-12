@@ -24,7 +24,26 @@ const command: SlashCommand = {
                             .setDescription('Reason for afk')
                     )
             )
-    
+    .addSubcommand((subcommand) =>
+       subcommand.setName('tinyurl')
+              .setDescription('use the tinyurl command')
+                .addStringOption(option =>
+                    option.setName('type')
+                        .setRequired(true)
+                        .setDescription('What type of url do you want to shorten')
+                        .addChoices(
+                            { name: 'cutt.ly/', value: '1' },
+                            { name: 'cdpt.in/', value: '2' },
+                            { name: 'is.gd/', value: '3' },
+                            { name: 'tinyurl.com/', value: '4' },
+                        )
+                )
+                        .addStringOption(option =>
+                            option.setName('url')
+                                .setRequired(true)
+                                .setDescription('Url to shorten')
+                        )
+                )
     .addSubcommandGroup((group) =>
         group.setName('school')
         .setDescription('Use the school sub commands')
@@ -221,6 +240,44 @@ const command: SlashCommand = {
         ),
             execute: async (interaction) => {
                 const client = require('../index')
+                if((interaction.options as any).getSubcommand() == 'tinyurl') {
+                    await interaction.deferReply({ ephemeral: true })
+                    const type = (interaction.options as any).getString('type') || '1';
+                    const url = (interaction.options as any).getString('url')
+                    
+                    if(type == '1') {
+                        const Shortener = require('link-shortener')  
+
+                        const result = Shortener.Shorten(url)
+
+                        result.then((res: any) => {
+                            if(res === undefined) return interaction.editReply({ content: 'Invalid URL' })
+                            interaction.editReply({ content: res })
+                        })
+                    } else if(type == '2') {
+                        const shortUrl = require("node-url-shortener");
+
+                        shortUrl.short(url, function(err: any, url: any){
+                            if(err) return interaction.editReply({ content: 'Invalid URL' })
+                            interaction.editReply({ content: url })
+                        })
+                    } else if(type == '3') {
+                        const shorturl = require('shorturl');
+
+                        shorturl(url, function(err: any, url: any){
+                            if(err) return interaction.editReply({ content: 'Invalid URL' })
+                            interaction.editReply({ content: url })
+                        })
+                    } else if(type == '4') {
+                        const turl = require('turl');
+
+                        turl.shorten(url, function(res: any){
+                            interaction.editReply({ content: res })
+                        }).catch((err: any) => {
+                            interaction.editReply({ content: 'Invalid URL' })
+                        })
+                    }
+                }
                 if((interaction.options as any).getSubcommand() == 'imagine') {
                     const visibility = (interaction.options as any).getString('visibility') || 'false';
                     if(visibility == 'true') {

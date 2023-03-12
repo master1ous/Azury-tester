@@ -1,1 +1,2 @@
 /package-lock.json filter=lfs diff=lfs merge=lfs -text
+/Lavalink.jar filter=lfs diff=lfs merge=lfs -text
