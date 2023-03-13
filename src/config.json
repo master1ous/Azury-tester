@@ -1,7 +1,8 @@
 {
     "Authentication": {
         "Token": "MTA3NDMwODA0Nzk2ODY3Nzk5OQ.Gs-YVn.O7WqwRcq4voncmH2uTPVYXyAW56EweZ0dqxnn0",
-        "Client_ID": "1074308047968677999"
+        "Client_ID": "1074308047968677999",
+        "Replicate": "Token 6dd41118ecd0c75715e75dfb33dd736180925d45"
     },
     "Presence": {
         "Names": ["/info", "/utility", "/settings", "/help"],

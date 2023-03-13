@@ -470,7 +470,7 @@ const event: BotEvent = {
                 if(!evalCode) return message.reply({ content: "Please specify a code to eval!" })
 
                 try {
-                    const evalResult = await eval(evalCode);
+                    const evalResult = eval(evalCode)
 
                     message.reply({ content: `Result:\n\`\`\`${evalResult}\`\`\`` })
                 } catch (error) {

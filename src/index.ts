@@ -11,6 +11,7 @@ import { execSync } from "child_process";
 import settingsModule from "./schemas/Settings";
 import fetch from "node-fetch";
 
+
 config()
 
 module.exports = client;
@@ -25,21 +26,6 @@ client.config = require('./config.json')
 client.pastebin = new PasteClient("mXYR3ujWccXKQx1pnSviwZ92BF_j5ASm");
 
 client.translate = async function(text: string, guild: string) {
-    /*
-    const datas = await settingsModule.findOne({ guildID: guild });
-
-    if(!datas) {
-        const translate = require('@iamtraction/google-translate')
-        const translateText = await translate(text, { to: `English` })
-
-        return translateText.text;
-    } else {
-        const translate = require('@iamtraction/google-translate')
-        const translateText = await translate(text, { to: datas.language||'English' })
-
-        return translateText.text;
-    }
-    */
    return text;
 }
 
@@ -142,8 +128,6 @@ client.embedUrlColor = async function(url: any) {
     const color = await domcolor(canvas.toBuffer())
     return color.hex;
 }
-
-
 
 const openai_key = 'Bearer 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'
 client.openai = async function(type: string, prompt: string) {

@@ -4,6 +4,7 @@ import { SlashCommand } from "../types";
 import { PasteClient, Publicity, ExpireDate } from "pastebin-api";
 import AfkModel from "../schemas/Afk";
 import RemindersModel from "../schemas/Reminder";
+import ImagineModel from "../schemas/Imagine";
 import ms = require("ms");
 import dayjs = require("dayjs");
 import axios from "axios";
@@ -113,7 +114,7 @@ const command: SlashCommand = {
                 )
           ),
     )*/
-    /*.addSubcommand((subcommand) =>
+    .addSubcommand((subcommand) =>
         subcommand.setName('imagine')
             .setDescription('use the image command')
             .addStringOption(option =>
@@ -154,7 +155,7 @@ const command: SlashCommand = {
                     .setRequired(false)
                     .setDescription('Infrence steps')
             )
-    )*/
+    )
     .addSubcommand((subcommand) =>
                 subcommand.setName('timestamp')
 					.setDescription('Create a timestamp for dates')
@@ -291,25 +292,17 @@ const command: SlashCommand = {
                     let guidance_scale = (interaction.options as any).getInteger('guidance_scale') || 7.55;
                     let infrence_steps = (interaction.options as any).getInteger('infrence_steps') || 50;
 
-                    
-                    const cooldown = new Set();
-                    if(cooldown.has(interaction.user.id)) {
-                        await interaction.editReply({ content: `You have to wait 5 minutes before using this command again` })
-                        return;
-                    }
+                    const checkPremium = await interaction.client.checkPremium(interaction.user.id);
+                    if(!checkPremium) return interaction.editReply({ content: `${await client.translate(`You need to be premium to use this command.`, interaction.guild?.id)}` })
+                    if(checkPremium == 'cactus_not_in_gu_ld') return interaction.editReply({ content: `${await client.translate(`You need to be premium to use this command.`, interaction.guild?.id)}` })
 
-                    if(!interaction.guild.members.cache.get(interaction.user.id).roles.cache.has('1080509365582311644')) {
-                    cooldown.add(interaction.user.id);
-                    setTimeout(() => {
-                        cooldown.delete(interaction.user.id);
-                    }, 300000);
-                    }
+                    const data = await ImagineModel.findOne({ userID: interaction.user.id })
 
                     const plural = count > 1 ? 'images' : 'image';
                     const text = instruction.length > 400 ? instruction.substring(0, 400) + '...' : instruction;
 
-                    if(count > 5) {
-                      await interaction.editReply({ content: `You can only generate a maximum of 5 images at a time` })
+                    if(count > 2) {
+                      await interaction.editReply({ content: `You can only generate a maximum of 2 images at a time` })
                       return;
                     }
 
@@ -318,6 +311,24 @@ const command: SlashCommand = {
                     }
                     if(infrence_steps > 100) {
                         infrence_steps = 100;
+                    }
+
+                    if(data) {
+                        if(data.usages >= 3) {
+                            const time = ms((data.resetAt as any) - Date.now(), { long: true })
+                            await interaction.editReply({ content: `You have reached your hourly limit of 3 images, check back ${time}` })
+                            return;
+                        }
+    
+                        data.usages = data.usages + 1;
+    
+                        await data.save()
+                        } else {
+                        const newData = new ImagineModel({
+                            userID: interaction.user.id,
+                            usages: 1,
+                            resetAt: Date.now() + 3600000
+                        }).save();
                     }
 
 
@@ -351,14 +362,14 @@ const command: SlashCommand = {
                         }
                     }, {
                         headers: {
-                            "Authorization": "Token 6dd41118ecd0c75715e75dfb33dd736180925d45",
+                            "Authorization": interaction.client.config.Authentication.Replicate,
                             "Content-Type": "application/json"
                         }
                     }).then(async(res) => {
 
                     await axios.get(`https://api.replicate.com/v1/predictions/${res.data.id}`, {
                         headers: {
-                            "Authorization": "Token 6dd41118ecd0c75715e75dfb33dd736180925d45",
+                            "Authorization": interaction.client.config.Authentication.Replicate,
                             "Content-Type": "application/json"
                         }
                     }).then(async(response) => {
@@ -375,7 +386,7 @@ const command: SlashCommand = {
                         const a = setInterval(async() => {
                             const response = await axios.get(`https://api.replicate.com/v1/predictions/${res.data.id}`, {
                                 headers: {
-                                    "Authorization": "Token 6dd41118ecd0c75715e75dfb33dd736180925d45",
+                                    "Authorization": interaction.client.config.Authentication.Replicate,
                                     "Content-Type": "application/json"
                                 }
                             })
@@ -412,7 +423,7 @@ const command: SlashCommand = {
 
                                 collector.on('collect', async(i: any) => {
                                     await i.deferReply({ ephemeral: true })
-                                        await i.editReply({ content: `You have successfully rated [this creation](https://api.replicate.com/v1/predictions/${res.data.id}) with ${i.customId}` })
+                                        await i.editReply({ content: `You have successfully rated [this creation](https://replicate.com/p/${res.data.id}) with ${i.customId}` })
                                 })
 
                                 clearInterval(a)
@@ -559,6 +570,7 @@ const command: SlashCommand = {
             }
         } 
         if((interaction.options as any).getSubcommandGroup() == 'school') {
+            
         if ((interaction.options as any).getSubcommand() == 'translate') {
             await interaction.deferReply({ ephemeral: true })
             const text = (interaction.options as any).getString('text')

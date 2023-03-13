@@ -580,7 +580,7 @@ const client = require('../index')
                                 const fields = {
                                     guild: new Discord.TextInputBuilder()
                                     .setCustomId('guild')
-                                    .setPlaceholder('Enter a guildId')
+                                    .setPlaceholder('Enter a guildID')
                                     .setStyle(Discord.TextInputStyle.Short)
                                     .setLabel('GuildID')
                                     .setRequired(true),

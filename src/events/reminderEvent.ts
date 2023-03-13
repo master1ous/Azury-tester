@@ -4,6 +4,7 @@ import { color } from "../functions";
 import Discord from "discord.js";
 import RemindersModel from "../schemas/Reminder";
 import GiveawayModel from "../schemas/Giveaway";
+import ImagineModel from "../schemas/Imagine";
 import ms from "ms";
 
 const event : BotEvent = {
@@ -12,6 +13,14 @@ const event : BotEvent = {
     execute: (client : Client) => {
 
         setInterval(async() => {
+        const imagines = await ImagineModel.find({})
+        imagines.forEach(async(imagine) => {
+            if((imagine.resetAt as any) <= Date.now()){
+                imagine.usages = 0
+                imagine.save()
+            }
+        })
+
         const reminders = await RemindersModel.find({})
         reminders.forEach(async(reminder) => {
             if((reminder.time as any) <= Date.now()){
