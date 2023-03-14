@@ -12,7 +12,7 @@ const event: BotEvent = {
         
         const snipes = message.client.snipe.get(message.channel.id) || [];
         snipes.unshift({
-        content: message.content,
+        content: message.content ? message.content : null,
         author: message.author,
         image: message.attachments ? message.attachments.map((a) =>  a.proxyURL) : null,
         timestamp: Date.now(),

@@ -63,7 +63,7 @@ const event : BotEvent = {
             })
             
             const giveaways = await GiveawayModel.find({})
-            giveaways.forEach(async(giveaway) => {
+            giveaways.forEach(async(giveaway: any) => {
                 if((giveaway.ends as any) <= Date.now()){
                     if(giveaway.ended === true) return;
                     const channel = client.channels.cache.get(giveaway.channelID)
@@ -83,13 +83,13 @@ const event : BotEvent = {
                         .sort(() => Math.random() - Math.random())
                         .slice(0, winnerCount);
 
-                    winners.forEach(async(winner) => {
+                    winners.forEach(async(winner: any) => {
                         const user = client.users.cache.get(winner);
                         if(!user) return;
                         user.send({ content: `Congrats, looks like you have won **${giveaway.prize}** in **${giveaway.guild}**` })
                     });
                     
-                    (channel as any).send({ content: `:tada: Congrats ${winners.map(r => `<@${r}>`)} you have won ${giveaway.prize}` }).then(() => {
+                    (channel as any).send({ content: `:tada: Congrats ${winners.map((r: any) => `<@${r}>`)} you have won ${giveaway.prize}` }).then(() => {
                         
                         giveaway.ended = true;
                         giveaway.save()

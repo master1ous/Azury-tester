@@ -6,7 +6,6 @@ import GiveawayModel from "../schemas/Giveaway";
 import EmbedModel from "../schemas/EmbedBuilder";
 import { PasteClient, Publicity, ExpireDate } from "pastebin-api";
 import ms from "ms";
-import { VariableDeclaration } from "typescript";
 
 const command: SlashCommand = {
     cooldown: 10,
@@ -1218,7 +1217,7 @@ const client = require('../index')
                         .sort(() => Math.random() - Math.random())
                         .slice(0, count);
 
-                    winners.forEach(async(winner) => {
+                    winners.forEach(async(winner: any) => {
                         const user = client.users.cache.get(winner);
                         if(!user) return;
                         user.send({ content: `Congrats, looks like you have been rerolled for **${data.prize}** in **${data.guild}**` })
