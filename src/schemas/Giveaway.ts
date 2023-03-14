@@ -1,8 +1,8 @@
 import { Schema, model } from "mongoose";
 
-export default model("giveaway", new Schema({
+export default model("giveaways", new Schema({
     guildID: { required:true, type: String },
-    hostID:  { required:true, type: String },
+    guild: { required: false, type: String },
     ends:   { required:true, type: Number },
     channelID: { required:true, type: String },
     giveawayID: { required:true, type: String },

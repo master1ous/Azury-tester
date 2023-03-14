@@ -135,6 +135,12 @@ const command: SlashCommand = {
                 option.setName('count')
                     .setRequired(false)
                     .setDescription('How many images to generate')
+                    .addChoices(
+                        { name: '1', value: 1 },
+                        { name: '2', value: 2 },
+                        { name: '3', value: 3 },
+                        { name: '4', value: 4 },
+                    )
             )
             .addStringOption(option =>
                 option.setName('size')
@@ -288,7 +294,7 @@ const command: SlashCommand = {
                     }
                     const instruction = (interaction.options as any).getString('instruction')
                     let count = (interaction.options as any).getInteger('count') || 1
-                    const size = (interaction.options as any).getString('size') || '768';
+                    const size = (interaction.options as any).getString('size') || '768x768';
                     let guidance_scale = (interaction.options as any).getInteger('guidance_scale') || 7.55;
                     let infrence_steps = (interaction.options as any).getInteger('infrence_steps') || 50;
 
@@ -301,8 +307,8 @@ const command: SlashCommand = {
                     const plural = count > 1 ? 'images' : 'image';
                     const text = instruction.length > 400 ? instruction.substring(0, 400) + '...' : instruction;
 
-                    if(count > 2) {
-                      await interaction.editReply({ content: `You can only generate a maximum of 2 images at a time` })
+                    if(count > 4) {
+                      await interaction.editReply({ content: `You can only generate a maximum of 4 images at a time` })
                       return;
                     }
 
@@ -351,11 +357,10 @@ const command: SlashCommand = {
                     await interaction.editReply({ content: `Generating ${count} ${plural} with the instruction: ${text}` })
 
                     await axios.post('https://api.replicate.com/v1/predictions', {
-                        "version": "9936c2001faa2194a261c01381f90e65261879985476014a0a37a334593a05eb", 
+                        "version": "db21e45d3f7023abc2a46ee38a23973f6dce16bb082a930b0c49861f96d1e5bf", 
                         "input": {
                             "prompt": instruction,
-                            "width": size,
-                            "height": size,
+                            "image_dimensions": size,
                             "num_outputs": count,
                             "guidance_scale": guidance_scale,
                             "num_inference_steps": infrence_steps,

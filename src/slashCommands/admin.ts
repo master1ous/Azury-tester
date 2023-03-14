@@ -153,41 +153,30 @@ const command: SlashCommand = {
                 .setRequired(true)
                 .setDescription('Enter a time for the giveaway')
             )
-            
             .addIntegerOption(option =>
                 option.setName('winners')
                 .setRequired(true)
                 .setDescription('Enter a number of winners for the giveaway')
+            )
+            .addStringOption(option =>
+                option.setName('image')
+                .setRequired(false)
+                .setDescription('Enter a image for the giveaway')
             )
         )
-        .addSubcommand((subcommand) =>
-            subcommand.setName('edit')
-            .setDescription('Edit a giveaway')
-            .addStringOption(option =>
-                option.setName('giveaway')
-                .setRequired(true)
-                .setDescription('Enter a giveaway to edit')
-            )
-            .addStringOption(option =>
-                option.setName('description')
-                .setRequired(false)
-                .setDescription('Enter a description for the giveaway')
-            )
-            .addStringOption(option =>
-                option.setName('prize')
-                .setRequired(false)
-                .setDescription('Enter a prize for the giveaway')
-            )
-            .addStringOption(option =>
-                option.setName('time')
-                .setRequired(false)
-                .setDescription('Enter a time for the giveaway')
-            )
-            .addIntegerOption(option =>
-                option.setName('winners')
-                .setRequired(false)
-                .setDescription('Enter a number of winners for the giveaway')
-            )
+        .addSubcommand((subcommand) => 
+        subcommand.setName('reroll')
+        .setDescription('Reroll a giveaway')
+        .addStringOption(option =>
+            option.setName('giveaway')
+            .setRequired(true)
+            .setDescription('Enter a giveawayId to end')
+        )
+        .addIntegerOption(option =>
+            option.setName('winners')
+            .setRequired(false)
+            .setDescription('Enter a number of winners to reroll')
+        )
         )
         .addSubcommand((subcommand) =>
             subcommand.setName('end')
@@ -248,7 +237,7 @@ const client = require('../index')
                 let msgsing = null as any;
 
                 let embed = new Discord.EmbedBuilder()
-                .setTitle('⚙️ Embed builder v1.1')
+                .setTitle('⚙️ Embed builder v3.4')
                 .setColor(await client.embedColor(interaction.user))
 
                 const row_back = new Discord.ActionRowBuilder<ButtonBuilder>()
@@ -417,7 +406,7 @@ const client = require('../index')
                 const btnMsg = await interaction.editReply({ embeds: [embed], components: [actionRow, actionRow2] })
 
                 const filter = (i: any) => i.user.id === interaction.user.id
-                const collector = btnMsg.createMessageComponentCollector({ filter, time: 1800000 })
+                const collector = btnMsg.createMessageComponentCollector({ filter })
 
                 collector.on('collect', async (i: any) => {
                     if (i.customId == 'back') {
@@ -584,17 +573,17 @@ const client = require('../index')
                                     .setStyle(Discord.TextInputStyle.Short)
                                     .setLabel('GuildID')
                                     .setRequired(true),
-                                    msg: new Discord.TextInputBuilder()
-                                    .setCustomId('msg')
-                                    .setPlaceholder('Enter a messageID')
-                                    .setStyle(Discord.TextInputStyle.Short)
-                                    .setLabel('MessageID')
-                                    .setRequired(true),
                                     channel: new Discord.TextInputBuilder()
                                     .setCustomId('channel')
                                     .setPlaceholder('Enter a channelID')
                                     .setStyle(Discord.TextInputStyle.Short)
                                     .setLabel('ChannelID')
+                                    .setRequired(true),
+                                    msg: new Discord.TextInputBuilder()
+                                    .setCustomId('msg')
+                                    .setPlaceholder('Enter a messageID')
+                                    .setStyle(Discord.TextInputStyle.Short)
+                                    .setLabel('MessageID')
                                     .setRequired(true),
                                 } as any;
         
@@ -673,6 +662,8 @@ const client = require('../index')
                                     await i.editReply({ content: 'Loaded your embed from Discord', components: [] })
                                     await interaction.editReply({ content: message.content||null, embeds: [message.embeds[0]], components: [actionRow, actionRow2] })
                                     }
+
+                                    collector.stop()
                                   }
                             }
                             if (i.customId == 'load_db') {
@@ -680,9 +671,9 @@ const client = require('../index')
                                 await i.editReply(`Please enter the ID of the embed you want to load`)
                                 const id = await interaction.client.awaitReply(i, interaction);
 
-                                const data = await EmbedModel.findOne({ ownerID: interaction.user?.id, embedID: id }) as any;
+                                const data = await EmbedModel.findOne({ embedID: id }) as any;
                                 if (!data) {
-                                    await i.editReply({ content: 'You have no saved embeds with that ID', components: [] })
+                                    await i.editReply({ content: 'That embedID seems to be invalid', components: [] })
                                 } else {
                                     if(data.contentData == 'cactus_no_con_tent') data.contentData = null;
                                     embed = new EmbedBuilder(data.embedData); // shows as a JSON format in the database
@@ -694,6 +685,8 @@ const client = require('../index')
                                         console.log(e)
                                         return interaction.editReply({ content: 'I couldn\'t edit the embed, this seems like a system or code error', components: [] })
                                     })
+
+                                    collector.stop()
                                 }
                             }
                             if (i.customId == 'load_json') {
@@ -773,6 +766,8 @@ const client = require('../index')
                                         return
                                     })
                                     embed = new EmbedBuilder(json);
+
+                                    collector.stop();
                                   }
         
                             }
@@ -889,28 +884,28 @@ const client = require('../index')
                     
                     if (i.customId == 'content') {
                         await i.deferUpdate()
-                        await interaction.editReply({ content: 'Waiting for your responce...' })
+                        await interaction.editReply({ content: 'Waiting for your response...' })
                         const content = await client.awaitReply(i, interaction)
                         msgsing = content;
                         await interaction.editReply({ content: content })
                     }
                     if (i.customId == 'title') {
                         await i.deferUpdate()
-                        await interaction.editReply({ content: 'Waiting for your responce...' })
+                        await interaction.editReply({ content: 'Waiting for your response...' })
                         const title = await client.awaitReply(i, interaction)
                         embed.setTitle(title)
                         await interaction.editReply({ content: msgsing, embeds: [embed] })
                     }
                     if (i.customId == 'description') {
                         await i.deferUpdate()
-                        await interaction.editReply({ content: 'Waiting for your responce...' })
+                        await interaction.editReply({ content: 'Waiting for your response...' })
                         const description = await client.awaitReply(i, interaction)
                         embed.setDescription(description)
                         await interaction.editReply({ content: msgsing, embeds: [embed] })
                     }
                     if (i.customId == 'color') {
                         await i.deferUpdate()
-                        await interaction.editReply({ content: 'Waiting for your responce...' })
+                        await interaction.editReply({ content: 'Waiting for your response...' })
                         const color = await client.awaitReply(i, interaction)
                         if(!color.startsWith('#')) {
                             await interaction.editReply({ content: 'Please enter a valid hex color\n\n' })
@@ -924,14 +919,14 @@ const client = require('../index')
                     }
                     if (i.customId == 'footer') {
                         await i.deferUpdate()
-                        await interaction.editReply({ content: 'Waiting for your responce...' })
+                        await interaction.editReply({ content: 'Waiting for your response...' })
                         const footer = await client.awaitReply(i, interaction)
                         embed.setFooter({ text: footer })
                         await interaction.editReply({ content: msgsing, embeds: [embed] })
                     }
                     if (i.customId == 'image') {
                         await i.deferUpdate()
-                        await interaction.editReply({ content: 'Waiting for your responce...' })
+                        await interaction.editReply({ content: 'Waiting for your response...' })
                         const image = await client.awaitReply(i, interaction)
 
                         await interaction.client.checkURL(image).then(async (res: any) => {
@@ -949,7 +944,7 @@ const client = require('../index')
                 }
                     if (i.customId == 'thumbnail') {
                         await i.deferUpdate()
-                        await interaction.editReply({ content: 'Waiting for your responce...' })
+                        await interaction.editReply({ content: 'Waiting for your response...' })
                         const thumbnail = await client.awaitReply(i, interaction)
 
                         await interaction.client.checkURL(thumbnail).then(async (res: any) => {
@@ -1052,7 +1047,7 @@ const client = require('../index')
                                 .setStyle(Discord.ButtonStyle.Primary),
                             ]
                         })
-                        const btnMSg = await interaction.editReply({ content: 'How do you want to send this embed?', components: [option] })
+                        const btnMSg = await interaction.editReply({ content: 'How do you want to send this embed?', components: [row_back, option] })
 
                         const filter = (i2: any) => i2.user.id === interaction.user.id;
                         const collector12 = btnMSg.createMessageComponentCollector({ filter, time: 1800000, max: 1 });
@@ -1129,6 +1124,7 @@ const client = require('../index')
                 const winners = (interaction.options as any).getInteger('winners')
                 const prize = (interaction.options as any).getString('prize')
                 const description = (interaction.options as any).getString('description') || 'No description provided'
+                const image = (interaction.options as any).getString('image') || null
                 
                 if(!channel) return interaction.reply({ content: await client.translate('Please provide a channel', interaction.guild?.id), ephemeral: true })
                 if(!time) return interaction.reply({ content: await client.translate('Please provide a time', interaction.guild?.id), ephemeral: true })
@@ -1145,18 +1141,22 @@ const client = require('../index')
                     { name: 'Ends', value: `<t:${Math.floor((Date.now() + (msTime as any)) / 1000)}:R> *(<t:${Math.floor((Date.now() + (msTime as any)) / 1000)}:D>)*`, inline: false },
                 )
                 .setColor(await interaction.client.embedColor(interaction.user))
+                .setImage(image)
                 .setTimestamp()
                 .setFooter({ text: `Hosted by ${interaction.user.username}`, iconURL: interaction.user.displayAvatarURL() })
                 
-                const msg = await channel.send({ embeds: [embeds] })
+                const msg = await channel.send({ embeds: [embeds] }).catch(async (err: any) => {
+                    await interaction.reply({ content: await client.translate('I was unable to send the giveaway in the provided channel', interaction.guild?.id), ephemeral: true })
+                    return
+                })
 
                 const data = await GiveawayModel.findOne({ hostID: interaction.guild?.id, giveawayID: msg.id })
                 if(data) return interaction.reply({ content: await client.translate('This giveaway is already in the database', interaction.guild?.id), ephemeral: true })
 
                 new GiveawayModel({
                     guildID: interaction.guild?.id,
+                    guild: interaction.guild?.name,
                     channelID: channel.id,
-                    hostID: interaction.guild?.id,
                     giveawayID: msg.id,
                     prize: prize,
                     winnerCount: winners,
@@ -1180,6 +1180,53 @@ const client = require('../index')
 
                 await msg.edit({ embeds: [embeds], components: [row] })
 
+            } else if((interaction.options as any).getSubcommand() == 'end') {
+                const giveaway = (interaction.options as any).getString('giveaway')
+
+                const data = await GiveawayModel.findOne({ giveawayID: giveaway })
+                if(!data) return interaction.reply({ content: await client.translate('This giveaway does not exist in the database', interaction.guild?.id), ephemeral: true })
+
+               interaction.reply({ content: await client.translate(`This giveaway for **${data.prize}** has now ended... it will show in a few seconds!`, interaction.guild?.id), ephemeral: true })
+               data.ends = Date.now()
+               data.save()
+            } else if((interaction.options as any).getSubcommand() == 'reroll') {
+                const giveaway = (interaction.options as any).getString('giveaway');
+                const count = (interaction.options as any).getInteger('winners') || 1;
+
+                const data = await GiveawayModel.findOne({ giveawayID: giveaway })
+                if(!data) return interaction.reply({ content: await client.translate('This giveaway does not exist in the database', interaction.guild?.id), ephemeral: true })
+
+                if(data.ended == false) return interaction.reply({ content: await client.translate('This giveaway has not ended yet', interaction.guild?.id), ephemeral: true })
+
+                const channel = interaction.guild?.channels.cache.get(data.channelID)
+                if(!channel) return interaction.reply({ content: await client.translate('I was unable to find the channel for this giveaway', interaction.guild?.id), ephemeral: true })
+
+                const winnerCount = data.winnerCount
+                const prize = data.prize
+                const participants = data.participants
+
+                if(data.participants.length < 1) {
+                    data.delete();
+                    return (channel as any).send({ content: `:x: No one participated in the giveaway for **${prize}**` })
+                }
+
+                if(data.participants.length < count) {
+                    return interaction.reply({ content: `This giveaway doesnt have enough users to reroll for!`, ephemeral: true })
+                }
+
+                const winners = participants
+                        .sort(() => Math.random() - Math.random())
+                        .slice(0, count);
+
+                    winners.forEach(async(winner) => {
+                        const user = client.users.cache.get(winner);
+                        if(!user) return;
+                        user.send({ content: `Congrats, looks like you have been rerolled for **${data.prize}** in **${data.guild}**` })
+                    });
+                    
+                    (channel as any).send({ content: `:tada: Congrats ${winners.map(r => `<@${r}>`)} you have been rerolled for ${data.prize}` })
+
+                    await interaction.reply({ content: await client.translate(`Rerolled giveaway for **${prize}**`, interaction.guild?.id), ephemeral: false })
             }
         }
         if ((interaction.options as any).getSubcommand() == 'ban') {

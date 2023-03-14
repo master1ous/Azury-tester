@@ -1,4 +1,4 @@
-import { Client, DiscordAPIError } from "discord.js";
+import { Client, DiscordAPIError, TextChannel } from "discord.js";
 import { BotEvent } from "../types";
 import { color } from "../functions";
 import Discord from "discord.js";
@@ -61,82 +61,45 @@ const event : BotEvent = {
             }
             }
             })
-        let winners = [] as any;
-        const giveaways = await GiveawayModel.find({ ended: false})
-        giveaways.forEach(async(giveaway) => {
-            if((giveaway.ends as any) <= Date.now()){
-                const channel = client.channels.cache.get(giveaway.channelID)
-                if(!channel) return giveaway.delete();
-                if(giveaway.participants.length < giveaway.winnerCount) {
-                  (channel as any).send({ content: `The giveaway for **${giveaway.prize}** has been cancelled, not enough participants` });
-                  const message = await (channel as any).messages.fetch(giveaway.giveawayID)
-                if(!message) return giveaway.delete();
+            
+            const giveaways = await GiveawayModel.find({})
+            giveaways.forEach(async(giveaway) => {
+                if((giveaway.ends as any) <= Date.now()){
+                    if(giveaway.ended === true) return;
+                    const channel = client.channels.cache.get(giveaway.channelID)
+                    if(!channel) return giveaway.delete();
 
-                const row = new Discord.ActionRowBuilder<Discord.ButtonBuilder>()
-                .addComponents(
-                    new Discord.ButtonBuilder()
-                    .setCustomId(`giveaway_${giveaway.giveawayID}`)
-                    .setLabel(`Participate`)
-                    .setEmoji(`1065399898440208484`)
-                    .setDisabled(true)
-                    .setStyle(Discord.ButtonStyle.Secondary),
-                    new Discord.ButtonBuilder()
-                    .setCustomId(`participants_${giveaway.giveawayID}`)
-                    .setLabel(`Participants`)
-                    .setDisabled(true)
-                    .setStyle(Discord.ButtonStyle.Secondary),
-                )
+                    const winnerCount = giveaway.winnerCount || 1;
+                    const participants = giveaway.participants || [];
+                    const prize = giveaway.prize || "No prize";
+                    const ended = giveaway.ended || false;
 
-                message.edit({ content: `:tada: GIVEAWAY CANCELLED :tada:`, components: [row] })
-
-                  giveaway.delete(); 
-                } else {
-                let participants = giveaway.participants;
-
-                giveaway.ended = true
-                giveaway.save()
-
-                    for (let i = 0; i < Number(giveaway.winnerCount); i++) {
-                        const winner = participants[Math.floor(Math.random() * participants.length)];
-                        if (!winner) return;
-                        winners.push(winner);
-
-                        if (i == (Number(giveaway.winnerCount) - 1)) {
-                            winners.forEach(async (_winner: any, _index: any) => {
-
-                            if (!_winner) 
-                            {winners[_index] = undefined} else {
-                            _winner.send({ content: `You have won the giveaway for **${giveaway.prize}**` }).catch(() => {})
-                            winners[_index] = _winner||{};
-                            }
-                        })
-
-                (channel as any).send({ content: `The giveaway for **${giveaway.prize}** has ended! The winners are as follows:\n• ${winners.join(", ")}` })
-
-                const message = await (channel as any).messages.fetch(giveaway.giveawayID)
-                if(!message) return giveaway.delete();
-
-                const row = new Discord.ActionRowBuilder<Discord.ButtonBuilder>()
-                .addComponents(
-                    new Discord.ButtonBuilder()
-                    .setCustomId(`giveaway_${giveaway.giveawayID}`)
-                    .setLabel(`Participate`)
-                    .setEmoji(`1065399898440208484`)
-                    .setDisabled(true)
-                    .setStyle(Discord.ButtonStyle.Secondary),
-                    new Discord.ButtonBuilder()
-                    .setCustomId(`participants_${giveaway.giveawayID}`)
-                    .setLabel(`Participants`)
-                    .setStyle(Discord.ButtonStyle.Secondary),
-                )
-
-                message.edit({ content: `:tada: GIVEAWAY ENDED :tada:`, components: [row] })
-
-                        }
+                    if(giveaway.participants.length < 1) {
+                        giveaway.delete();
+                        return (channel as any).send({ content: `:x: No one participated in the giveaway for **${prize}**` })
                     }
-                }
-            }
-        })
+
+                    const winners = participants
+                        .sort(() => Math.random() - Math.random())
+                        .slice(0, winnerCount);
+
+                    winners.forEach(async(winner) => {
+                        const user = client.users.cache.get(winner);
+                        if(!user) return;
+                        user.send({ content: `Congrats, looks like you have won **${giveaway.prize}** in **${giveaway.guild}**` })
+                    });
+                    
+                    (channel as any).send({ content: `:tada: Congrats ${winners.map(r => `<@${r}>`)} you have won ${giveaway.prize}` }).then(() => {
+                        
+                        giveaway.ended = true;
+                        giveaway.save()
+                    }).catch(() => {
+                        // update giveaway.ended to be true
+                        giveaway.ended = true;
+                        giveaway.save()
+                    })
+                } 
+            })
         }, 10000)
         }
 }

@@ -76,46 +76,36 @@ const event : BotEvent = {
 
         if (interaction.isButton()) {
             if(interaction.customId.startsWith('giveaway_')) {
-                const gid = interaction.customId.replace('giveaway_', ``);
-                const data = await giveawayModule.findOne({ guildID: interaction.guild?.id, giveawayID: gid, participants: interaction.user });
-                const data_check = await giveawayModule.findOne({ guildID: interaction.guild?.id, giveawayID: gid });
-                if(!data_check) {
-                    await interaction.reply({ content: `This giveaway doesnt exist!`, ephemeral: true })
+                const id = interaction.customId.replace('giveaway_', '')
+
+                const data = await giveawayModule.findOne({ giveawayID: id })
+                if(!data) return interaction.reply({ content: await interaction.client.translate(`No giveaway found with that id!`), ephemeral: true })
+                if(data.ended === true) return interaction.reply({ content: await interaction.client.translate(`This giveaway has already ended!`), ephemeral: true });
+
+                if(data.participants.includes(interaction.user)) {
+                    // remove the user from the participants array
+                    giveawayModule.findOneAndUpdate({ giveawayID: id }, { $pull: { participants: interaction.user } }, { new: true }).exec()
+
+                    await interaction.reply({ content: await interaction.client.translate(`You have been removed from the giveaway!`), ephemeral: true })
                 } else {
-                if(!data) {
-                    giveawayModule.updateOne({ guildID: interaction.guild?.id, giveawayID: gid }, { $push: { participants: interaction.user } }).exec().then(async() => {
-                        await interaction.reply({ content: `You joined the giveaway for ${data.prize}\n• Which ends <t:${data.ends}:R> *(<t:${data.ends}:L>)*`, ephemeral: true })
-                    })
-                } else {
-                    giveawayModule.updateOne({ guildID: interaction.guild?.id, giveawayID: gid }, { $pull: { participants: interaction.user } }).exec().then(async() => {
-                        await interaction.reply({ content: `You left the giveaway for ${data.prize}!`, ephemeral: true })
-                    })
+                    // add the user to the participants array
+                    giveawayModule.findOneAndUpdate({ giveawayID: id }, { $push: { participants: interaction.user } }, { new: true }).exec()
+
+                    await interaction.reply({ content: await interaction.client.translate(`You have been added to the giveaway for **${data.prize}**`), ephemeral: true })
                 }
-            }
             }
             if(interaction.customId.startsWith('participants_')) {
-                const gid = interaction.customId.replace('giveaway_', ``);
-                const data = await giveawayModule.findOne({ guildID: interaction.guild?.id, giveawayID: gid });
+                const id = interaction.customId.replace('participants_', '')
 
-                let winners = [] as any;
+                const data = await giveawayModule.findOne({ giveawayID: id })
+                if(!data) return interaction.reply({ content: await interaction.client.translate(`No giveaway found with that id!`), ephemeral: true })
 
-                if(!data) {
-                  await interaction.reply({ content: `No giveaway found with that id!`, ephemeral: true })
-                } else {
-                    let participants = data.participants;
+                if(data.participants.length < 1) return interaction.reply({ content: await interaction.client.translate(`No participants found in this giveaway!`), ephemeral: true })
 
-                    for (let i = 0; i < Number(data.participants.length); i++) {
-                        const winner = participants[Math.floor(Math.random() * participants.length)];
-                        if (!winner) return;
-                        winners.push(`${winner}`);
-                    }
-                
+                const participants = data.participants.map((p: any) => `<@${p}>`).join(', ')
 
-                await interaction.reply({ content: `There are ${(data as any).participants.length} participants:\n>>> ${winners}`, ephemeral: true })
-                }
+                await interaction.reply({ content: await interaction.client.translate(`Participants: ${participants}`), ephemeral: true })
             }
-
-
             if(interaction.customId == 'setup-sticky') {
                 await interaction.deferUpdate()
 

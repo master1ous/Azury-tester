@@ -464,6 +464,55 @@ const event: BotEvent = {
                     message.reply({ content: `Stopped ${name}!` })
                 });
             }
+            if(message.content == "!git-update") {
+                // run git add -A
+                const { exec } = require("child_process");
+                exec("git add -A", (error: any, stdout: any, stderr: any) => {
+                    if (error) {
+                        console.log(`error: ${error.message}`);
+                        return;
+                    }
+                    if (stderr) {
+                        console.log(`stderr: ${stderr}`);
+                        return;
+                    }
+                    message.reply({ content: `Added all changed files to githhub!\n• Use **!git-commit** to commit the changes!` })
+                });
+            }
+            if(message.content.startsWith("!git-commit")) {
+                const messages = message.content.split(" ").slice(1).join(" ");
+
+                if(!messages) return message.reply({ content: "Please specify a message!" })
+
+                // run git commit -m "message"
+                const { exec } = require("child_process");
+                exec(`git commit -m "${messages}"`, (error: any, stdout: any, stderr: any) => {
+                    if (error) {
+                        console.log(`error: ${error.message}`);
+                        return;
+                    }
+                    if (stderr) {
+                        console.log(`stderr: ${stderr}`);
+                        return;
+                    }
+                    message.reply({ content: `Committed the changes!\n• Use **!git-push** to push the changes!` })
+                });
+            }
+            if(message.content == "!git-push") {
+                // run git push --set-upstream origin master 
+                const { exec } = require("child_process");
+                exec("git push --set-upstream origin master", (error: any, stdout: any, stderr: any) => {
+                    if (error) {
+                        console.log(`error: ${error.message}`);
+                        return;
+                    }
+                    if (stderr) {
+                        console.log(`stderr: ${stderr}`);
+                        return;
+                    }
+                    message.reply({ content: `Pushed the changes!` })
+                });
+            }
             if(message.content.startsWith("!eval")) {
                 const evalCode = message.content.split(" ").slice(1).join(" ");
 
