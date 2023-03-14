@@ -1,0 +1,16 @@
+[33m1f06918[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{0}: rebase (finish): returning to refs/heads/master
+[33m1f06918[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{1}: rebase (start): checkout refs/remotes/origin/master
+[33m1f06918[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{2}: rebase (finish): returning to refs/heads/master
+[33m1f06918[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{3}: rebase (start): checkout refs/remotes/origin/master
+[33mc161484[m HEAD@{4}: rebase (finish): returning to refs/heads/master
+[33mc161484[m HEAD@{5}: rebase (start): checkout refs/remotes/origin/master
+[33mc161484[m HEAD@{6}: rebase (continue) (finish): returning to refs/heads/master
+[33mc161484[m HEAD@{7}: rebase (continue) (finish): refs/heads/master onto 1f0691831c43297284777b9247b331bf80536757
+[33mc161484[m HEAD@{8}: commit: Added new giveaway system
+[33mee998af[m HEAD@{9}: commit: Added a new premium /...imagine command only for premium users, fixed bugs
+[33m3544635[m HEAD@{10}: commit: Added a new premium /...imagine command only for premium users, fixed bugs
+[33m1f06918[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{11}: commit: <@&1080992437280968734> **Fixed the warn command**, **Added /...warnings /..unwarn /...purge /...snipe to the admin subgroup**
+[33m6169741[m HEAD@{12}: commit: <@&1080992437280968734> Added new updated + tinyurl command **BETA**
+[33m660e103[m HEAD@{13}: commit: Debugging# Please enter the commit message for your changes. Lines starting
+[33maa5ce31[m HEAD@{14}: commit: Transfered hosts ~ Fixed few files
+[33m545b096[m HEAD@{15}: clone: from github.com:AzuryIndustry/Azury-tester.git
