@@ -1,10 +1,11 @@
-import { SlashCommandBuilder, ChannelType, TextChannel, EmbedBuilder, CommandInteraction, SlashCommandSubcommandBuilder, ChatInputCommandInteraction, ButtonBuilder, ModalActionRowComponentBuilder, Message, EmbedData } from "discord.js"
+import { SlashCommandBuilder, ChannelType, TextChannel, EmbedBuilder, CommandInteraction, SlashCommandSubcommandBuilder, ChatInputCommandInteraction, ButtonBuilder, ModalActionRowComponentBuilder, Message, EmbedData, ButtonStyle } from "discord.js"
 import Discord from "discord.js";
 import { SlashCommand } from "../types";
 import WarningsModel from "../schemas/Warnings";
 import GiveawayModel from "../schemas/Giveaway";
 import EmbedModel from "../schemas/EmbedBuilder";
 import { PasteClient, Publicity, ExpireDate } from "pastebin-api";
+import { pagesystem } from "../functions";
 import ms from "ms";
 
 const command: SlashCommand = {
@@ -48,6 +49,16 @@ const command: SlashCommand = {
             option.setName('amount')
             .setRequired(true)
             .setDescription('Enter an amount of messages to purge')
+        )
+        .addStringOption(option =>
+            option.setName('type')
+            .setRequired(true)
+            .setDescription('Enter a type of messages to purge')
+            .addChoices(
+                { name: 'All', value: 'all' },
+                { name: 'Bot', value: 'bot' },
+                { name: 'User', value: 'user' },
+            )
         )
         .addChannelOption(option =>
             option.setName('channel')
@@ -157,10 +168,10 @@ const command: SlashCommand = {
                 .setRequired(true)
                 .setDescription('Enter a number of winners for the giveaway')
             )
-            .addStringOption(option =>
+            .addAttachmentOption(option =>
                 option.setName('image')
                 .setRequired(false)
-                .setDescription('Enter a image for the giveaway')
+                .setDescription('Enter an image for the giveaway')
             )
         )
         .addSubcommand((subcommand) => 
@@ -1123,7 +1134,7 @@ const client = require('../index')
                 const winners = (interaction.options as any).getInteger('winners')
                 const prize = (interaction.options as any).getString('prize')
                 const description = (interaction.options as any).getString('description') || 'No description provided'
-                const image = (interaction.options as any).getString('image') || null
+                const image = (interaction.options as any).getAttachment('image') || null
                 
                 if(!channel) return interaction.reply({ content: await client.translate('Please provide a channel', interaction.guild?.id), ephemeral: true })
                 if(!time) return interaction.reply({ content: await client.translate('Please provide a time', interaction.guild?.id), ephemeral: true })
@@ -1140,7 +1151,7 @@ const client = require('../index')
                     { name: 'Ends', value: `<t:${Math.floor((Date.now() + (msTime as any)) / 1000)}:R> *(<t:${Math.floor((Date.now() + (msTime as any)) / 1000)}:D>)*`, inline: false },
                 )
                 .setColor(await interaction.client.embedColor(interaction.user))
-                .setImage(image)
+                .setImage(image ? image.url : null)
                 .setTimestamp()
                 .setFooter({ text: `Hosted by ${interaction.user.username}`, iconURL: interaction.user.displayAvatarURL() })
                 
@@ -1178,6 +1189,8 @@ const client = require('../index')
                 ])
 
                 await msg.edit({ embeds: [embeds], components: [row] })
+
+                interaction.reply({ content: await client.translate(`Created a giveaway for **${prize}** in ${channel}`, interaction.guild?.id), ephemeral: true })
 
             } else if((interaction.options as any).getSubcommand() == 'end') {
                 const giveaway = (interaction.options as any).getString('giveaway')
@@ -1317,8 +1330,42 @@ const client = require('../index')
         } else if ((interaction.options as any).getSubcommand() == 'purge') {
             const amount = (interaction.options as any).getInteger('amount');
             const channel = (interaction.options as any).getChannel('channel') || interaction.channel;
+            const type = (interaction.options as any).getString('type');
 
+            if(amount < 1) return interaction.reply({ content: `You less than 1 message, as there would be nothing to purge`, ephemeral: true })
             if(amount > 100) return interaction.reply({ content: `You cannot purge more than 100 messages due to discord API limit`, ephemeral: true })
+
+            if(type == 'bot') {
+                const messages = await channel.messages.fetch({ limit: amount })
+                const botMessages = messages.filter((message: any) => message.author.bot)
+
+                if(botMessages.size < 1) return interaction.reply({ content: `There are no bot messages in the last ${amount} messages`, ephemeral: true })
+                if(botMessages.size > 100) return interaction.reply({ content: `I cannot purge more than 100 messages due to discord API limit`, ephemeral: true })
+
+                await channel.bulkDelete(botMessages, true).catch((e: any) => {
+                    interaction.reply({ content: `I was unable to purge the messages\n\`\`\`${e}\`\`\``, ephemeral: true })
+                    return;
+                })
+            } else if(type == 'user') {
+                const messages = await channel.messages.fetch({ limit: amount })
+                const userMessages = messages.filter((message: any) => message.author.id == interaction.user.id)
+
+                if(userMessages.size < 1) return interaction.reply({ content: `There are no your messages in the last ${amount} messages`, ephemeral: true })
+
+                await channel.bulkDelete(userMessages, true).catch((e: any) => {
+                    interaction.reply({ content: `I was unable to purge the messages\n\`\`\`${e}\`\`\``, ephemeral: true })
+                    return;
+                })
+            } else if(type == 'all') {
+                await channel.bulkDelete(amount, true).catch((e: any) => {
+                    interaction.reply({ content: `I was unable to purge the messages\n\`\`\`${e}\`\`\``, ephemeral: true })
+                    return;
+                })
+            }
+
+            await channel.send({ content: `Purged **`+amount+`** (${type}) messages by ${interaction.user}`})
+
+            /*if(amount > 100) return interaction.reply({ content: `You cannot purge more than 100 messages due to discord API limit`, ephemeral: true })
             if(amount < 1) return interaction.reply({ content: `You less than 1 message, as there would be nothing to purge`, ephemeral: true })
 
             interaction.reply({ content: `Purging ${amount} messages in ${channel.toString()}...`, ephemeral: true })
@@ -1327,7 +1374,7 @@ const client = require('../index')
                 interaction.reply({ content: `I was unable to purge the messages\n\`\`\`${e}\`\`\``, ephemeral: true })
             })
 
-            await channel.send({ content: 'Purged **'+amount+'** messages by '+interaction.user.toString()})
+            await channel.send({ content: 'Purged **'+amount+'** messages by '+interaction.user.toString()})*/
         }
     }
 }

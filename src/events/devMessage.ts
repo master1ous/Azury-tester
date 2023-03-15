@@ -499,9 +499,9 @@ const event: BotEvent = {
                 });
             }
             if(message.content == "!git-push") {
-                // run git push --set-upstream origin master 
+                // run git push --force-with-lease origin master:master
                 const { exec } = require("child_process");
-                exec("git push --set-upstream origin master", (error: any, stdout: any, stderr: any) => {
+                exec("git push --force-with-lease origin master:master", (error: any, stdout: any, stderr: any) => {
                     if (error) {
                         console.log(`error: ${error.message}`);
                         return;
