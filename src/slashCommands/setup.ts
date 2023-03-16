@@ -8,43 +8,6 @@ const command: SlashCommand = {
     command: new SlashCommandBuilder()
     .setName("setup")
     .setDescription("Use the setup sub commands")
-    /*.addSubcommand((subcommand) =>
-        subcommand.setName('language')
-        .setDescription('Setup the language system')
-        .addStringOption(option =>
-            option.setName('lang')
-            .setRequired(true)
-            .setDescription('What language to setup')
-            .addChoices(
-                { name: `Chinese`, value: `chinese simplified` },
-                { name: `Spanish`, value: `spanish` },
-                { name: `English`, value: `english` },
-                { name: `Hindi`, value: `hindi` },
-                { name: `Arabic`, value: `arabic` },
-                { name: `Portuguese`, value: `portuguese` },
-                { name: `Bengali`, value: `bengali` },
-                { name: `Russian`, value: `russian` },
-                { name: `Japanese`, value: `japanese` },
-                { name: `Punjabi`, value: `punjabi` },
-                { name: `German`, value: `german` },
-                { name: `Javanese`, value: `javanese` },
-                { name: `Wu (including Shanghainese)`, value: `wu` },
-                { name: `Korean`, value: `korean` },
-                { name: `French`, value: `french` },
-                { name: `Telugu`, value: `telugu` },
-                { name: `Marathi`, value: `marathi` },
-                { name: `Tamil`, value: `tamil` },
-                { name: `Turkish`, value: `turkish` },
-                { name: `Vietnamese`, value: `vietnamese` },
-                { name: `Urdu`, value: `urdu` },
-                { name: `Cantonese`, value: `cantonese` },
-                { name: `Persian`, value: `persian` },
-                { name: `Pashto`, value: `pashto` },
-                { name: `Polish`, value: `polish` }
-            )
-        )
-            
-    )*/
     .addSubcommand((subcommand) =>
         subcommand.setName('sticky')
         .setDescription('Setup the sticky message system')
@@ -73,6 +36,7 @@ const command: SlashCommand = {
     
 
     execute: async (interaction) => {
+        const client = interaction.client
         if(!(interaction.member.permissions as any).has('ADMINISTRATOR')) return interaction.reply({ content: `You need to have the \`ADMINISTRATOR\` permission to use this command`, ephemeral: true })
 
         

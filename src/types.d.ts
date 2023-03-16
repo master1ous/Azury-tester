@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, CommandInteraction, Collection, PermissionResolvable, Message, AutocompleteInteraction } from "discord.js"
+import { SlashCommandBuilder, CommandInteraction, Collection, PermissionResolvable, Message, AutocompleteInteraction, ContextMenuCommandBuilder } from "discord.js"
 import mongoose from "mongoose"
 
 export interface SlashCommand {
@@ -15,6 +15,13 @@ export interface SlashCommandList {
     autocomplete?: (interaction: AutocompleteInteraction) => void,
     cooldown?: number, // in seconds
     category?: string
+}
+
+export interface ContextMenu {
+    command: ContextMenuCommandBuilder | any,
+    execute: (interaction : CommandInteraction) => void,
+    cooldown?: number, // in seconds
+    id?: string
 }
 
 export interface Command {
@@ -58,6 +65,7 @@ declare module "discord.js" {
     export interface Client {
         slashCommands: Collection<string, SlashCommand>
         slashCommandsList: Collection<string, SlashCommand>
+        contextMenuCommands: Collection<string, ContextMenu>
         commands: Collection<string, Command>,
         config: Collection<string>,
         translate: Collection<string>,

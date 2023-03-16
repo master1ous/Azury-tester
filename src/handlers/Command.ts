@@ -1,9 +1,9 @@
-import { Client, Routes, SlashCommandBuilder } from "discord.js";
+import { Client, Routes, SlashCommandBuilder, ContextMenuCommandBuilder } from "discord.js";
 import { REST } from "@discordjs/rest"
 import { readdirSync } from "fs";
 import { join } from "path";
 import { color } from "../functions";
-import { Command, SlashCommand } from "../types";
+import { Command, SlashCommand, ContextMenu } from "../types";
 
 module.exports = (client : Client) => {
     const slashCommands : SlashCommandBuilder[] = []
@@ -31,5 +31,6 @@ module.exports = (client : Client) => {
     }).catch(e => {
         console.log(e)
     })
+
 }
 

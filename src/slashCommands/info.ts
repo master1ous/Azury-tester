@@ -97,7 +97,7 @@ const command: SlashCommand = {
         )
     ),
             execute: async (interaction) => {
-                const client = require('../index')
+                const client = interaction.client
                 if((interaction.options as any).getSubcommand() == 'premium') {
                     const user = (interaction.options as any).getUser('user') || null
                     await interaction.deferReply({ ephemeral: true })
@@ -287,7 +287,7 @@ const command: SlashCommand = {
                             { name: await client.translate(`Managed`, interaction.guild?.id), value: role?.managed ? `${role?.managed}` : await client.translate(`No managed`, interaction.guild?.id), inline: true },
                             { name: await client.translate(`Created at`, interaction.guild?.id), value: role?.createdAt ? `<t:${Math.floor(role?.createdAt.getTime() / 1000)}:F>` : await client.translate(`No created at`, interaction.guild?.id), inline: true },
                             { name: await client.translate(`Members`, interaction.guild?.id), value: role?.members ? `${role?.members.size}` : await client.translate(`No members`, interaction.guild?.id), inline: true },
-                            { name: await client.translate(`Permissions`, interaction.guild?.id), value: role?.permissions ? `${role?.permissions.toArray().join(', ')}` : await client.translate(`No permissions`, interaction.guild?.id), inline: false },
+                            { name: await client.translate(`Permissions`, interaction.guild?.id), value: role?.permissions ? `${role?.permissions.join(', ') || 'No permissions'}` : await client.translate(`No permissions`, interaction.guild?.id), inline: false },
                         )
 
                         const row = new ActionRowBuilder<ButtonBuilder>()
@@ -374,9 +374,9 @@ const command: SlashCommand = {
                         { name: await client.translate(`Created at`, interaction.guild?.id), value: `<t:${Math.floor(user.createdAt.getTime() / 1000)}:R>`, inline: true },
                         { name: await client.translate(`Avatar`, interaction.guild?.id), value: `[png](${user.displayAvatarURL({ format: 'png', dynamic: true })}) | [jpg](${user.displayAvatarURL({ format: 'jpg', dynamic: true })}) | [jpeg](${user.displayAvatarURL({ format: 'jpeg', dynamic: true })}) | [gif](${user.displayAvatarURL({ format: 'gif', dynamic: true })}) | [webp](${user.displayAvatarURL({ format: 'webp', dynamic: true })})`, inline: true },
                         { name: '\u200b', value: await client.translate(`**User roles/perms:**`, interaction.guild?.id) },
-                        { name: await client.translate(`Roles`, interaction.guild?.id), value: roles.cache.size > 25 ? roles.cache.map((role: any) => `<@&${role.id}>`).slice(0, 25).join(', ') + ` and ${roles.cache.size - 25} more` : roles.cache.map((role: any) => `<@&${role.id}>`).join(', ').replace(/@@everyone/g, '') || await client.translate(`No roles`, interaction.guild?.id), inline: false },
-                        { name: await client.translate(`Permissions`, interaction.guild?.id), value: (interaction.member as any).permissions.toArray().length > 25 ? (interaction.member as any).permissions.toArray().slice(0, 25).join(', ') + ` and ${(interaction.member as any).permissions.toArray().length - 25} more` : (interaction.member as any).permissions.toArray().join(', ') || await client.translate(`No permissions`, interaction.guild?.id), inline: false },
+                        { name: await client.translate(`Roles`, interaction.guild?.id), value: roles.cache.size > 25 ? roles.cache.map((role: any) => `<@&${role.id}>`).slice(0, 25).join(', ') + ` and ${roles.cache.size - 25} more` : roles.cache.map((role: any) => `<@&${role.id}>`).join(', ').replace(/@@everyone/g, '') || await client.translate(`No roles`, interaction.guild?.id), inline: true },
                         { name: await client.translate(`Highest role`, interaction.guild?.id), value: roles.highest ? `<@&${roles.highest.id}>` : await client.translate(`No high role`, interaction.guild?.id), inline: false },
+                        { name: await client.translate(`Permissions`, interaction.guild?.id), value: (interaction.member as any).permissions.toArray().length > 25 ? (interaction.member as any).permissions.toArray().slice(0, 25).join(', ') + ` and ${(interaction.member as any).permissions.toArray().length - 25} more` : (interaction.member as any).permissions.toArray().join(', ') || await client.translate(`No permissions`, interaction.guild?.id), inline: false },
                         )
 
                         await interaction.editReply({ embeds: [embed] })

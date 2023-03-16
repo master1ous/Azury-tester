@@ -1,6 +1,4 @@
 import { Client, GatewayIntentBits, Collection, PermissionFlagsBits,} from "discord.js";
-const { Guilds, MessageContent, GuildMessages, GuildMembers, GuildInvites, GuildVoiceStates } = GatewayIntentBits
-const client = new Client({intents:[Guilds, MessageContent, GuildMessages, GuildMembers, GuildInvites, GuildVoiceStates]})
 import { SlashCommand, SlashCommandList } from "./types";
 import { config } from "dotenv";
 import { readdirSync } from "fs";
@@ -9,20 +7,15 @@ import axios from "axios";
 import { PasteClient, Publicity, ExpireDate } from "pastebin-api";
 import { execSync } from "child_process";
 import settingsModule from "./schemas/Settings";
+import premiumModel from "./schemas/PremiumUser";
 import fetch from "node-fetch";
+import { BotClient } from "./structures/botClient";
 
+const client = new BotClient();
 
 config()
-
 module.exports = client;
 
-//require('./levelcard.ts')(client)
-
-client.snipe = new Collection<any, any>()
-client.slashCommands = new Collection<string, SlashCommand>( )
-client.slashCommandsList = new Collection<string, SlashCommandList>( )
-client.cooldowns = new Collection<string, number>()
-client.config = require('./config.json')
 client.pastebin = new PasteClient("mXYR3ujWccXKQx1pnSviwZ92BF_j5ASm");
 
 client.translate = async function(text: string, guild: string) {
@@ -163,26 +156,3 @@ client.timestamp = async function getTime(args: any, eph = true, arg1: any) {
         return "Invalid time string, check https://tinyurl.com/cactus-manual for more info";
     }
 }
-
-const handlersDir = join(__dirname, "./handlers")
-readdirSync(handlersDir).forEach(handler => {
-    require(`${handlersDir}/${handler}`)(client)
-})
-
-client.login(client.config.Authentication.Token)
-
-process.on('unhandledRejection', error => {
-    console.error('Unhandled promise rejection:', error);
-});
-
-process.on('uncaughtException', error => {
-    console.error('Uncaught exception:', error);
-});
-
-process.on('warning', error => {
-    console.error('Warning:', error);
-});
-
-process.on('exit', code => {
-    console.log(`About to exit with code: ${code}`);
-});

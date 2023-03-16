@@ -103,16 +103,7 @@ const command: SlashCommand = {
                             .setRequired(true)
                             .setDescription('Enter your prompt for gpt-3')
                     )
-            )
-    .addSubcommand((subcommand) =>
-            subcommand.setName('dalle')
-                .setDescription('use the openai dalle command')
-                .addStringOption(option =>
-                    option.setName('prompt')
-                        .setRequired(true)
-                        .setDescription('Enter your prompt for dalle')
-                )
-          ),
+            ),
     )*/
     .addSubcommand((subcommand) =>
         subcommand.setName('imagine')
@@ -246,7 +237,7 @@ const command: SlashCommand = {
                 )
         ),
             execute: async (interaction) => {
-                const client = require('../index')
+                const client = interaction.client
                 if((interaction.options as any).getSubcommand() == 'tinyurl') {
                     await interaction.deferReply({ ephemeral: true })
                     const type = (interaction.options as any).getString('type') || '1';

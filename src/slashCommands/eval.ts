@@ -19,7 +19,7 @@ const command: SlashCommand = {
     
             execute: async (interaction) => {
                 await interaction.deferReply({ ephemeral: true })
-                const client = require('../index')
+                const client = interaction.client
                 const { guild, member, channel, options } = interaction
                 const { user } = member
                 const { id, username, discriminator, avatar } = user

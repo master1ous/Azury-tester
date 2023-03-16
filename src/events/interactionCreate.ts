@@ -8,6 +8,7 @@ import { threadId } from "worker_threads";
 const event : BotEvent = {
     name: "interactionCreate",
     execute: async(interaction: Interaction) => {
+        
         if (interaction.isChatInputCommand()) {
             let command = interaction.client.slashCommands.get(interaction.commandName)
             let cooldown = interaction.client.cooldowns.get(`${interaction.commandName}-${interaction.user.username}`)

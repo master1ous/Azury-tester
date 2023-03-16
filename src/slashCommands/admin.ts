@@ -199,7 +199,7 @@ const command: SlashCommand = {
         )
     ),
     execute: async (interaction) => {
-const client = require('../index')
+        const client = interaction.client
 
         if (!(interaction.member as any).permissions.has('ADMINISTRATOR')) {
             return await interaction.reply({ content: 'You do not have permission to use this command', ephemeral: true })

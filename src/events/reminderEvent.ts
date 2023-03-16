@@ -39,7 +39,6 @@ const event : BotEvent = {
                     loop: reminder.loop,
                     parseDate: reminder.parseDate,
                 })
-                newReminder.save()
                 
                 user.send({ content: `Your reminder which was created at **${reminder.createdAt}**\n\`${reminder.reminder}\`` }).then(() => {
                 reminder.delete()
@@ -49,6 +48,8 @@ const event : BotEvent = {
                 (channel as any).send({ content: `${user} Your reminder which was created at **${reminder.createdAt}**\n\`${reminder.reminder}\`` })
                 reminder.delete()
                 })
+
+                newReminder.save()
                 } else {
                 user.send({ content: `Your reminder which was created at **${reminder.createdAt}**\n\`${reminder.reminder}\`` }).then(() => {
                 reminder.delete()
