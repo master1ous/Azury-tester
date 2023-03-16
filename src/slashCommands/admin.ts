@@ -1201,7 +1201,7 @@ const command: SlashCommand = {
                interaction.reply({ content: await client.translate(`This giveaway for **${data.prize}** has now ended... it will show in a few seconds!`, interaction.guild?.id), ephemeral: true })
                data.ends = Date.now()
                data.save()
-            } else if((interaction.options as any).getSubcommand() == 'reroll') {
+            }  else if((interaction.options as any).getSubcommand() == 'reroll') {
                 const giveaway = (interaction.options as any).getString('giveaway');
                 const count = (interaction.options as any).getInteger('winners') || 1;
 
@@ -1210,7 +1210,7 @@ const command: SlashCommand = {
 
                 if(data.ended == false) return interaction.reply({ content: await client.translate('This giveaway has not ended yet', interaction.guild?.id), ephemeral: true })
 
-                const channel = interaction.guild?.channels.cache.get(data.channelID)
+                const channel = interaction.guild?.channels.cache.get(data.channelID as any) as any;
                 if(!channel) return interaction.reply({ content: await client.translate('I was unable to find the channel for this giveaway', interaction.guild?.id), ephemeral: true })
 
                 const winnerCount = data.winnerCount
@@ -1240,7 +1240,7 @@ const command: SlashCommand = {
 
                     await interaction.reply({ content: await client.translate(`Rerolled giveaway for **${prize}**`, interaction.guild?.id), ephemeral: false })
             }
-        }
+        } 
         if ((interaction.options as any).getSubcommand() == 'ban') {
             const user = (interaction.options as any).getUser('user')
             const reason = (interaction.options as any).getString('reason') || 'No reason provided'

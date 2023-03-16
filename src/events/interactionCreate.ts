@@ -110,7 +110,7 @@ const event : BotEvent = {
             if(interaction.customId == 'setup-sticky') {
                 await interaction.deferUpdate()
 
-                await interaction.editReply({ content: await interaction.client.translate(`Please enter the message you want to set as sticky!`), components: [] })
+                await interaction.editReply({ content: await interaction.client.translate(`Please enter the message you want to set!`), components: [] })
 
                 const filter = (m: Message) => m.author.id === interaction.user.id;
                 const collector = (interaction.channel as any)?.createMessageCollector({ filter, time: 60000, max: 1 });
@@ -126,6 +126,7 @@ const event : BotEvent = {
 
                     collector2?.on('collect', async (m: Message) => {
                         if(!m.mentions.channels.first()) {
+                            m.delete()
                             await interaction.editReply({ content: await interaction.client.translate(`Please mention a channel in your message!`), components: [] })
                         } else {
                             const data = await settingsModule.findOne({ guildID: interaction.guild.id })
