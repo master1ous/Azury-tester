@@ -207,15 +207,15 @@ const command: SlashCommand = {
 
         if ((interaction.options as any).getSubcommand() == 'snipe') {
             await interaction.deferReply({ ephemeral: false })
-            const channel = (interaction.options as any).getChannel('channel') || interaction.channel
+            const channel = (interaction.options as any).getChannel('channel') || null
             const msg = (interaction.options as any).getInteger('msg') || 1;
 
-            const snipes = client.snipe.get(channel.id) || []
+            const snipes = client.snipe.get(channel ? channel.id : interaction.channel.id) || []
             const snipedmsg = snipes[msg - 1 || 0]
 
             if (!snipedmsg) return await interaction.editReply({ content: 'There are no messages to snipe' })
 
-            const text = channel ? `Sniped message from **${snipedmsg.author.username}** in **this channel**` : `Sniped message from **${snipedmsg.author.username}** in **${channel.name}**`;
+            const text = channel ? `Sniped message from **${snipedmsg.author.username}** in **${channel.name}**` : `Sniped message from **${snipedmsg.author.username}** in **this channel**`;
 
             let images = [] as any;
 
@@ -234,12 +234,38 @@ const command: SlashCommand = {
                 )
             }
 
-            embed.addFields(
-                { name: 'Message deletion date', value: `<t:${Math.floor(snipedmsg.timestamp/1000)}:R> (<t:${Math.floor(snipedmsg.timestamp/1000)}:F>)` },
+            const row = new Discord.ActionRowBuilder<ButtonBuilder>()
+            .addComponents(
+                new Discord.ButtonBuilder()
+                .setLabel('Delete snipe')
+                .setCustomId(snipedmsg.snipeid)
+                .setEmoji('🗑️')
+                .setStyle(ButtonStyle.Primary)
             )
 
-            await interaction.editReply({ content: `${text}`, embeds: [embed] })
-        }
+            const btnMsg = await interaction.editReply({ content: `${text}\n• **Deleted <t:${Math.floor(snipedmsg.timestamp/1000)}:R> (<t:${Math.floor(snipedmsg.timestamp/1000)}:F>)**`, embeds: [embed], components: [row] })
+            const filter = (btn: any) => btn.user.id == interaction.user.id;
+            const collector = btnMsg.createMessageComponentCollector({ filter });
+
+            collector.on('collect', async (btn: any) => {
+                if(btn.user.id !== interaction.user.id) return await btn.reply({ content: 'You cannot delete this snipe, only '+interaction.user.toString()+' can!', ephemeral: true })
+
+                if(!(btn.member as any).permissions.has('ADMINISTRATOR')) return await btn.reply({ content: 'You do not have permission to delete this snipe', ephemeral: true })
+
+                const snipes = client.snipe.get(channel ? channel.id : btn.channel.id) || []
+
+                const snipedmsg = snipes.find((s: any) => s.snipeid == btn.customId)
+
+                if(!snipedmsg) return await btn.reply({ content: 'This snipe has already been deleted', ephemeral: true })
+
+                const index = snipes.indexOf(snipedmsg)
+                snipes.splice(index, 1)
+                client.snipe.set(channel ? channel.id : btn.channel.id, snipes)
+
+                await btn.reply({ content: 'Successfully deleted snipe', ephemeral: true })
+                await interaction.editReply({ components: [] })
+            })
+            }
         if ((interaction.options as any).getSubcommand() == 'embedbuilder') {
                 await interaction.deferReply({ ephemeral: true })
                 const channel = (interaction.options as any).getChannel('channel') as TextChannel
@@ -1348,7 +1374,7 @@ const command: SlashCommand = {
                 })
             } else if(type == 'user') {
                 const messages = await channel.messages.fetch({ limit: 100 })
-                const userMessages = messages.filter((message: any) => message.author.id == interaction.user.id)
+                const userMessages = messages.filter((message: any) => !message.author.bot)
 
                 if(userMessages.size < 1) return interaction.reply({ content: `There are no your messages in the last ${amount} messages`, ephemeral: true })
 

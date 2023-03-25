@@ -269,7 +269,7 @@ const event : BotEvent = {
             if(oldUser.username == newUser.username) return;
             const embed = new Discord.EmbedBuilder()
             .setColor(`DarkGold` as ColorResolvable)
-            .setAuthor({ name: `User Username Changed`, iconURL: newUser.user.avatarURL(), url: `https://discord.com/users/${newUser.id}` })
+            .setAuthor({ name: `User Username Changed`, iconURL: newUser.user.displayAvatarURL(), url: `https://discord.com/users/${newUser.id}` })
             .addFields(
                 { name: "Member", value: oldUser.toString(), inline: true },
                 { name: "Old Username", value: oldUser.username, inline: true },
@@ -488,6 +488,39 @@ const event : BotEvent = {
                 await sendAudit(oldRole.guild, embed)
             }
         })
+
+        client.on("guildUpdate", async (oldGuild: any, newGuild: any) => {
+            const fetchedLogs = await oldGuild.fetchAuditLogs({
+                limit: 1,
+                type: AuditLogEvent.GuildUpdate,
+            });
+            if(oldGuild.name !== newGuild.name) {
+                const embed = new Discord.EmbedBuilder()
+                .setColor(`DarkGold` as ColorResolvable)
+                .setAuthor({ name: `Server Name Updated`, iconURL: oldGuild.iconURL(), url: oldGuild.iconURL() })
+                .addFields(
+                    { name: "Executor", value: fetchedLogs.entries.first()?.executor?.toString() || "Unknown", inline: true},
+                    { name: "Old Name", value: oldGuild.name, inline: true },
+                    { name: "New Name", value: newGuild.name, inline: true }
+                )
+                .setTimestamp()
+                .setFooter({ text: `ID: ${oldGuild.id}` })
+                await sendAudit(oldGuild, embed)
+            }
+            if(oldGuild.icon !== newGuild.icon) {
+                const embed = new Discord.EmbedBuilder()
+                .setColor(`DarkGold` as ColorResolvable)
+                .setAuthor({ name: `Server Icon Updated`, iconURL: newGuild.iconURL(), url: newGuild.iconURL() })
+                .addFields(
+                    { name: "Executor", value: fetchedLogs.entries.first()?.executor?.toString() || "Unknown", inline: true},
+                    { name: "Old Icon", value: oldGuild.iconURL() ? `[\`Click here\`](${oldGuild.iconURL()})` : 'None', inline: true },
+                    { name: "New Icon", value: newGuild.iconURL() ? `[\`Click here\`](${newGuild.iconURL()})` : 'None', inline: true }
+                )
+                .setTimestamp()
+                .setFooter({ text: `ID: ${newGuild.id}` })
+                await sendAudit(oldGuild, embed)
+            }
+    })
 
     }
 }

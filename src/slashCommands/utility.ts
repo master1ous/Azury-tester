@@ -371,8 +371,7 @@ const command: SlashCommand = {
                         const attachment = new AttachmentBuilder(element, { name: 'imagine.png' });
                         imgarray.push(attachment)
                     })
-                                m.delete().catch(() => {})
-                                await interaction.channel.send({ content: `${interaction.user} here is your delivery for **${count}** images\n\\> ${text}`, files: imgarray })
+                                await interaction.editReply({ content: `${interaction.user} here is your delivery for **${count}** images\n\\> ${text}`, files: imgarray })
                     } else {
                         let index = 0;
                         const a = setInterval(async() => {
@@ -383,6 +382,7 @@ const command: SlashCommand = {
                                 }
                             })
                                 if(response.data.status == 'succeeded') {
+                                clearInterval(a)
                                     let imgarray = [] as any;
                     response.data.output.forEach((element: any) => {
                         const attachment = new AttachmentBuilder(element, { name: 'imagine.png' });
@@ -410,9 +410,10 @@ const command: SlashCommand = {
                             .setStyle(ButtonStyle.Primary)
                             .setEmoji('😍'),
                     )
-                                m.delete().catch(() => {})
-                                const BtnMsg = await interaction.channel.send({ content: `${interaction.user} here is your delivery for **${count}** ${plural}`, files: imgarray, components: [row] })
+                                const BtnMsg = await interaction.editReply({ content: `${interaction.user} here is your delivery for **${count}** ${plural}`, files: imgarray, components: [row] })
                                 BtnMsg.edit({ content: `${interaction.user} here is your delivery for **${count}** ${plural}\n\\> ${text}`, files: imgarray, components: [row] })
+
+                                m.replyMessage({ content: `${interaction.user} completed your request!`})
                                 
                                 const collector = BtnMsg.createMessageComponentCollector({ });
 
@@ -421,7 +422,6 @@ const command: SlashCommand = {
                                         await i.editReply({ content: `You have successfully rated [this creation](https://replicate.com/p/${res.data.id}) with ${i.customId}` }).catch(() => {})
                                 })
 
-                                clearInterval(a)
                                 } else {
                                     index++;
 
@@ -471,8 +471,7 @@ const command: SlashCommand = {
                         const attachment = new AttachmentBuilder(response.data.output, { name: 'superresolution.png' });
                         console.log(response.data)
 
-                    m.delete().catch(() => {})
-                    await interaction.channel.send({ content: `${interaction.user} here is you high resolution image output`, files: [attachment] })
+                    await interaction.editReply({ content: `${interaction.user} here is you high resolution image output`, files: [attachment] })
                     } else {
                         let index = 0;
                         const a = setInterval(async() => {
@@ -483,13 +482,14 @@ const command: SlashCommand = {
                                 }
                             })
                                 if(response.data.status == 'succeeded') {
+                                    
+                                clearInterval(a)
                         const attachment = new AttachmentBuilder(response.data.output, { name: 'superresolution.png' });
                         console.log(response.data)
 
-                    m.delete().catch(() => {})
-                    await interaction.channel.send({ content: `${interaction.user} here is you high resolution image output`, files: [attachment] })
+                    await interaction.editReply({ content: `${interaction.user} here is you high resolution image output`, files: [attachment] })
 
-                                clearInterval(a)
+                    m.replyMessage({ content: `${interaction.user} completed requests`})
                                 } else {
                                     index++;
 

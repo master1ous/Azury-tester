@@ -26,6 +26,19 @@ const command: SlashCommand = {
         )
     )
     .addSubcommand((subcommand) =>
+        subcommand.setName('antighostmessage')
+        .setDescription('Setup the anti ghost message system')
+        .addStringOption(option =>
+            option.setName('type')
+            .setRequired(true)
+            .setDescription('What type of anti ghost message to setup')
+            .addChoices(
+                { name: `Enable`, value: `enable` },
+                { name: `Disable`, value: `disable` },
+            )
+        )
+    )
+    .addSubcommand((subcommand) =>
         subcommand.setName('audit')
         .setDescription('Setup the audit system')
     )
@@ -39,7 +52,25 @@ const command: SlashCommand = {
         const client = interaction.client
         if(!(interaction.member.permissions as any).has(PermissionFlagsBits.Administrator)) return interaction.reply({ content: `You need to have the \`ADMINISTRATOR\` permission to use this command`, ephemeral: true })
 
-        
+        if((interaction.options as any).getSubcommand() == 'antighostmessage') {
+            const type = (interaction.options as any).getString('type');
+            
+            const data = await settingsModule.findOne({ guildID: interaction.guild.id })
+
+            if(type == 'enable') {
+                if(data?.antighostmessage) return interaction.reply({ content: 'Anti ghost message is already enabled!', ephemeral: true })
+
+                await settingsModule.findOneAndUpdate({ guildID: interaction.guild.id }, { antighostmessage: true }, { upsert: true })
+
+                interaction.reply({ content: 'Anti ghost message has been enabled!', ephemeral: true })
+            } else if(type == 'disable') {
+                if(!data?.antighostmessage) return interaction.reply({ content: 'Anti ghost message is already disabled!', ephemeral: true })
+
+                await settingsModule.findOneAndUpdate({ guildID: interaction.guild.id }, { antighostmessage: false }, { upsert: true })
+
+                interaction.reply({ content: 'Anti ghost message has been disabled!', ephemeral: true })
+            }
+        }
         if((interaction.options as any).getSubcommand() == 'sticky') {
             await interaction.deferReply({ ephemeral: true });
 
