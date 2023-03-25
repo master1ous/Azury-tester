@@ -1129,11 +1129,11 @@ const command: SlashCommand = {
             } 
         if((interaction.options as any).getSubcommandGroup() == 'giveaway') {
             if((interaction.options as any).getSubcommand() == 'create') {
-                const channel = (interaction.options as any).getChannel('channel') || interaction.channel
-                const time = (interaction.options as any).getString('time')
-                const winners = (interaction.options as any).getInteger('winners')
-                const prize = (interaction.options as any).getString('prize')
-                const description = (interaction.options as any).getString('description') || 'No description provided'
+                const channel = (interaction.options as any).getChannel('channel') as TextChannel || interaction.channel as TextChannel;
+                const time = (interaction.options as any).getString('time') as string;
+                const winners = (interaction.options as any).getInteger('winners') as number;
+                const prize = (interaction.options as any).getString('prize') as string;
+                const description = (interaction.options as any).getString('description') as string || 'No description provided' as string;
                 const image = (interaction.options as any).getAttachment('image') || null
                 
                 if(!channel) return interaction.reply({ content: await client.translate('Please provide a channel', interaction.guild?.id), ephemeral: true })
@@ -1141,14 +1141,14 @@ const command: SlashCommand = {
                 if(!winners) return interaction.reply({ content: await client.translate('Please provide a number of winners', interaction.guild?.id), ephemeral: true })
                 if(!prize) return interaction.reply({ content: await client.translate('Please provide a prize', interaction.guild?.id), ephemeral: true })
 
-                const msTime = ms(time)
+                const msTime = ms(time) as any;
                 
                 const embeds = new Discord.EmbedBuilder()
                 .setDescription(`${description}`)
                 .addFields(
                     { name: 'Prize', value: `\`\`\`${prize}\`\`\``, inline: true },
                     { name: 'Winners', value: `\`\`\`${winners}\`\`\``, inline: true },
-                    { name: 'Ends', value: `<t:${Math.floor((Date.now() + (msTime as any)) / 1000)}:R> *(<t:${Math.floor((Date.now() + (msTime as any)) / 1000)}:D>)*`, inline: false },
+                    { name: 'Ends', value: `<t:${Math.floor((Date.now() + msTime) / 1000)}:R> *(<t:${Math.floor((Date.now() + (msTime as any)) / 1000)}:D>)*`, inline: false },
                 )
                 .setColor(await interaction.client.embedColor(interaction.user))
                 .setImage(image ? image.url : null)
@@ -1157,8 +1157,8 @@ const command: SlashCommand = {
                 
                 const msg = await channel.send({ embeds: [embeds] }).catch(async (err: any) => {
                     await interaction.reply({ content: await client.translate('I was unable to send the giveaway in the provided channel', interaction.guild?.id), ephemeral: true })
-                    return
-                })
+                    return;
+                }) as Message;
 
                 const data = await GiveawayModel.findOne({ hostID: interaction.guild?.id, giveawayID: msg.id })
                 if(data) return interaction.reply({ content: await client.translate('This giveaway is already in the database', interaction.guild?.id), ephemeral: true })
@@ -1193,7 +1193,7 @@ const command: SlashCommand = {
                 interaction.reply({ content: await client.translate(`Created a giveaway for **${prize}** in ${channel}`, interaction.guild?.id), ephemeral: true })
 
             } else if((interaction.options as any).getSubcommand() == 'end') {
-                const giveaway = (interaction.options as any).getString('giveaway')
+                const giveaway = (interaction.options as any).getString('giveaway') as string;
 
                 const data = await GiveawayModel.findOne({ giveawayID: giveaway })
                 if(!data) return interaction.reply({ content: await client.translate('This giveaway does not exist in the database', interaction.guild?.id), ephemeral: true })
@@ -1202,15 +1202,15 @@ const command: SlashCommand = {
                data.ends = Date.now()
                data.save()
             }  else if((interaction.options as any).getSubcommand() == 'reroll') {
-                const giveaway = (interaction.options as any).getString('giveaway');
-                const count = (interaction.options as any).getInteger('winners') || 1;
+                const giveaway = (interaction.options as any).getString('giveaway') as string;
+                const count = (interaction.options as any).getInteger('winners') as number || 1 as number;
 
                 const data = await GiveawayModel.findOne({ giveawayID: giveaway })
                 if(!data) return interaction.reply({ content: await client.translate('This giveaway does not exist in the database', interaction.guild?.id), ephemeral: true })
 
                 if(data.ended == false) return interaction.reply({ content: await client.translate('This giveaway has not ended yet', interaction.guild?.id), ephemeral: true })
 
-                const channel = interaction.guild?.channels.cache.get(data.channelID as any) as any;
+                const channel = interaction.guild?.channels.cache.get(data.channelID as string);
                 if(!channel) return interaction.reply({ content: await client.translate('I was unable to find the channel for this giveaway', interaction.guild?.id), ephemeral: true })
 
                 const winnerCount = data.winnerCount
@@ -1336,7 +1336,7 @@ const command: SlashCommand = {
             if(amount > 100) return interaction.reply({ content: `You cannot purge more than 100 messages due to discord API limit`, ephemeral: true })
 
             if(type == 'bot') {
-                const messages = await channel.messages.fetch({ limit: amount })
+                const messages = await channel.messages.fetch({ limit: 100 })
                 const botMessages = messages.filter((message: any) => message.author.bot)
 
                 if(botMessages.size < 1) return interaction.reply({ content: `There are no bot messages in the last ${amount} messages`, ephemeral: true })
@@ -1347,7 +1347,7 @@ const command: SlashCommand = {
                     return;
                 })
             } else if(type == 'user') {
-                const messages = await channel.messages.fetch({ limit: amount })
+                const messages = await channel.messages.fetch({ limit: 100 })
                 const userMessages = messages.filter((message: any) => message.author.id == interaction.user.id)
 
                 if(userMessages.size < 1) return interaction.reply({ content: `There are no your messages in the last ${amount} messages`, ephemeral: true })

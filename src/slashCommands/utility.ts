@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, ChannelType, TextChannel, EmbedBuilder, CommandInteraction, ButtonStyle, SlashCommandSubcommandBuilder, ChatInputCommandInteraction, ButtonBuilder, AttachmentBuilder, ActionRowBuilder, Guild } from "discord.js"
+import { SlashCommandBuilder, ChannelType, Message, TextChannel, EmbedBuilder, CommandInteraction, ButtonStyle, SlashCommandSubcommandBuilder, ChatInputCommandInteraction, ButtonBuilder, AttachmentBuilder, ActionRowBuilder, Guild } from "discord.js"
 import Discord from "discord.js";
 import { SlashCommand } from "../types";
 import { PasteClient, Publicity, ExpireDate } from "pastebin-api";
@@ -113,15 +113,6 @@ const command: SlashCommand = {
                     .setRequired(true)
                     .setDescription('Instruction to draw')
             )
-            .addStringOption(option =>
-                option.setName('visibility')
-                    .setRequired(true)
-                    .setDescription('Do you want people to see this message?')
-                    .addChoices(
-                        { name: 'Yes', value: 'false' },
-                        { name: 'No', value: 'true' },
-                    )
-            )
             .addIntegerOption(option =>
                 option.setName('count')
                     .setRequired(false)
@@ -151,6 +142,15 @@ const command: SlashCommand = {
                 option.setName('infrence_steps')
                     .setRequired(false)
                     .setDescription('Infrence steps')
+            )
+    )
+    .addSubcommand((subcommand) =>
+        subcommand.setName('superresolution')
+            .setDescription('use the superresolution command')
+            .addAttachmentOption(option =>
+                option.setName('image')
+                    .setRequired(true)
+                    .setDescription('Image to superresolution')
             )
     )
     .addSubcommand((subcommand) =>
@@ -277,23 +277,18 @@ const command: SlashCommand = {
                     }
                 }
                 if((interaction.options as any).getSubcommand() == 'imagine') {
-                    const visibility = (interaction.options as any).getString('visibility') || 'false';
-                    if(visibility == 'true') {
-                    await interaction.deferReply({ ephemeral: true })
-                    } else {
-                    await interaction.deferReply({ ephemeral: false })
-                    }
+                    await interaction.deferReply({ ephemeral: false }).then(async(m: any) => {
                     const instruction = (interaction.options as any).getString('instruction')
                     let count = (interaction.options as any).getInteger('count') || 1
                     const size = (interaction.options as any).getString('size') || '768x768';
                     let guidance_scale = (interaction.options as any).getInteger('guidance_scale') || 7.55;
                     let infrence_steps = (interaction.options as any).getInteger('infrence_steps') || 50;
 
-                    const checkPremium = await interaction.client.checkPremium(interaction.user.id);
+                    /*const checkPremium = await interaction.client.checkPremium(interaction.user.id);
                     if(!checkPremium) return interaction.editReply({ content: `${await client.translate(`You need to be premium to use this command.`, interaction.guild?.id)}` })
                     if(checkPremium == 'cactus_not_in_gu_ld') return interaction.editReply({ content: `${await client.translate(`You need to be premium to use this command.`, interaction.guild?.id)}` })
 
-                    const data = await ImagineModel.findOne({ userID: interaction.user.id })
+                    const data = await ImagineModel.findOne({ userID: interaction.user.id })*/
 
                     const plural = count > 1 ? 'images' : 'image';
                     const text = instruction.length > 400 ? instruction.substring(0, 400) + '...' : instruction;
@@ -310,7 +305,7 @@ const command: SlashCommand = {
                         infrence_steps = 100;
                     }
 
-                    if(data) {
+                    /*if(data) {
                         if(data.usages >= 3) {
                             const time = ms((data.resetAt as any) - Date.now(), { long: true })
                             await interaction.editReply({ content: `You have reached your hourly limit of 3 images, check back ${time}` })
@@ -326,7 +321,7 @@ const command: SlashCommand = {
                             usages: 1,
                             resetAt: Date.now() + 3600000
                         }).save();
-                    }
+                    }*/
 
 
                     const moderation = await axios.post('https://api.openai.com/v1/moderations', {
@@ -345,7 +340,7 @@ const command: SlashCommand = {
                         }
                     }
 
-                    await interaction.editReply({ content: `Generating ${count} ${plural} with the instruction: ${text}` })
+                    await interaction.editReply({ content: `Generating ${count} ${plural} with the instruction: ${text}` }).catch(() => {})
 
                     await axios.post('https://api.replicate.com/v1/predictions', {
                         "version": "db21e45d3f7023abc2a46ee38a23973f6dce16bb082a930b0c49861f96d1e5bf", 
@@ -376,7 +371,8 @@ const command: SlashCommand = {
                         const attachment = new AttachmentBuilder(element, { name: 'imagine.png' });
                         imgarray.push(attachment)
                     })
-                                await interaction.editReply({ files: imgarray })
+                                m.delete().catch(() => {})
+                                await interaction.channel.send({ content: `${interaction.user} here is your delivery for **${count}** images\n\\> ${text}`, files: imgarray })
                     } else {
                         let index = 0;
                         const a = setInterval(async() => {
@@ -414,12 +410,15 @@ const command: SlashCommand = {
                             .setStyle(ButtonStyle.Primary)
                             .setEmoji('😍'),
                     )
-                                const BtnMsg = await interaction.editReply({ content: `\\> ${text}`, files: imgarray, components: [row] })
+                                m.delete().catch(() => {})
+                                const BtnMsg = await interaction.channel.send({ content: `${interaction.user} here is your delivery for **${count}** ${plural}`, files: imgarray, components: [row] })
+                                BtnMsg.edit({ content: `${interaction.user} here is your delivery for **${count}** ${plural}\n\\> ${text}`, files: imgarray, components: [row] })
+                                
                                 const collector = BtnMsg.createMessageComponentCollector({ });
 
                                 collector.on('collect', async(i: any) => {
                                     await i.deferReply({ ephemeral: true })
-                                        await i.editReply({ content: `You have successfully rated [this creation](https://replicate.com/p/${res.data.id}) with ${i.customId}` })
+                                        await i.editReply({ content: `You have successfully rated [this creation](https://replicate.com/p/${res.data.id}) with ${i.customId}` }).catch(() => {})
                                 })
 
                                 clearInterval(a)
@@ -427,16 +426,85 @@ const command: SlashCommand = {
                                     index++;
 
                                     if(index > 50) {
-                                        await interaction.editReply({ content: `Generating ${count} ${plural} with the instruction: ${text}\n• *Sorry for the long wait, the API is probably on hold*` })
+                                        await interaction.editReply({ content: `Generating ${count} ${plural} with the instruction: ${text}\n• *Sorry for the long wait, the API is probably on hold*` }).catch(() => {clearInterval(a)})
                                     } else if(index > 20) {
-                                        await interaction.editReply({ content: `Generating ${count} ${plural} with the instruction: ${text}\n• *Seems the API is taking a while to generate, please wait*` })
+                                        await interaction.editReply({ content: `Generating ${count} ${plural} with the instruction: ${text}\n• *Seems the API is taking a while to generate, please wait*` }).catch(() => {clearInterval(a)})
                                     }
                                 }
-                            }, 1000)
+                            }, 2000)
                     }
                 })
                     })
+                })
                 }
+        if((interaction.options as any).getSubcommand() == 'superresolution') {
+            await interaction.deferReply({ ephemeral: false }).then(async(m: any) => {
+            const image = (interaction.options as any).getAttachment('image');
+
+            if(!image) {
+                await interaction.editReply({ content: `Please provide a valid image` })
+                return;
+            }
+
+            await interaction.editReply({ content: `Making your image high resolution` }).catch(() => {})
+
+            await axios.post('https://api.replicate.com/v1/predictions', {
+                        "version": "a01b0512004918ca55d02e554914a9eca63909fa83a29ff0f115c78a7045574f", 
+                        "input": {
+                            "image": image.url,
+                        }
+                    }, {
+                        headers: {
+                            "Authorization": interaction.client.config.Authentication.Replicate,
+                            "Content-Type": "application/json"
+                        }
+                    }).then(async(res) => {
+
+                    await axios.get(`https://api.replicate.com/v1/predictions/${res.data.id}`, {
+                        headers: {
+                            "Authorization": interaction.client.config.Authentication.Replicate,
+                            "Content-Type": "application/json"
+                        }
+                    }).then(async(response) => {
+
+                    if(response.data.status == 'succeeded') {
+                        const attachment = new AttachmentBuilder(response.data.output, { name: 'superresolution.png' });
+                        console.log(response.data)
+
+                    m.delete().catch(() => {})
+                    await interaction.channel.send({ content: `${interaction.user} here is you high resolution image output`, files: [attachment] })
+                    } else {
+                        let index = 0;
+                        const a = setInterval(async() => {
+                            const response = await axios.get(`https://api.replicate.com/v1/predictions/${res.data.id}`, {
+                                headers: {
+                                    "Authorization": interaction.client.config.Authentication.Replicate,
+                                    "Content-Type": "application/json"
+                                }
+                            })
+                                if(response.data.status == 'succeeded') {
+                        const attachment = new AttachmentBuilder(response.data.output, { name: 'superresolution.png' });
+                        console.log(response.data)
+
+                    m.delete().catch(() => {})
+                    await interaction.channel.send({ content: `${interaction.user} here is you high resolution image output`, files: [attachment] })
+
+                                clearInterval(a)
+                                } else {
+                                    index++;
+
+                                    if(index > 50) {
+                                        await interaction.editReply({ content: `Making your image high resolution\n• *Sorry for the long wait, the API is probably on hold*` }).catch(() => {clearInterval(a)})
+                                    } else if(index > 20) {
+                                        await interaction.editReply({ content: `Making your image high resolution\n• *Seems the API is taking a while to generate, please wait*` }).catch(() => {clearInterval(a)})
+                                    }
+                                }
+                            }, 2000)
+                        }
+                    })
+                    })
+            })
+        }
         if((interaction.options as any).getSubcommandGroup() == 'reminder') {
             if((interaction.options as any).getSubcommand() == 'loop') {
                 await interaction.deferReply({ ephemeral: true })

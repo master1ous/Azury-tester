@@ -394,8 +394,8 @@ const event: BotEvent = {
         }
 
         //Private Dev Stuff
-        const devIds = ["693553429380857978", "1078770321240375347", "705048027865415690"]
-        if(devIds.includes(message.author.id)) {
+        
+        if(client.config.Authentication.Engineers.includes(message.author.id)) {
             if(message.content == '!pm2-list') {
                 let array = [] as any;
                 pm2.list(function(err: any, list: any) {

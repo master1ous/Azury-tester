@@ -6,7 +6,7 @@ import model from "../schemas/Settings";
 
 const event : BotEvent = {
     name: "guildMemberAdd",
-    once: true,
+    once: false,
     execute: async(member: GuildMember) => {
         const data = await model.findOne({ guildID: member.guild?.id })
         if(!data) return;

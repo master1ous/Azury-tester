@@ -3,6 +3,7 @@ import Discord from "discord.js";
 import { BotEvent } from "../types";
 import { color } from "../functions";
 import SettingsModule from "../schemas/Settings";
+import { channel } from "diagnostics_channel";
 
 const event : BotEvent = {
     name: "ready",
@@ -15,14 +16,14 @@ const event : BotEvent = {
                 const invite = await (client.fetchInvite(message.content.split("discord.gg/")[1]) as any).catch(() => {return});
                 if(!invite) return;
                 const embed = new Discord.EmbedBuilder()
-                .setColor(await message.client.embedColor(message.author))
+                .setColor(`DarkGreen` as ColorResolvable)
                 .setAuthor({ name: "Invite Detected", iconURL: message.author.avatarURL() })
                 .setDescription(`Posted <t:${Math.floor(message.createdTimestamp / 1000)}:R>`)
                 .addFields(
-                    { name: "Author", value: message.author.tag, inline: true },
+                    { name: "Author", value: message.author.toString(), inline: true },
                     { name: "Channel", value: message.channel.toString(), inline: true },
                     { name: "Server", value: invite.guild.name, inline: true },
-                    { name: "Members", value: invite.guild.memberCount ? invite.guild.memberCount.toString() : 'Not able to determine', inline: true },
+                    { name: "Members", value: invite.guild.memberCount ? invite.guild?.memberCount.toString() : 'Not able to determine', inline: true },
                 )
                 .setTimestamp()
 
@@ -46,10 +47,10 @@ const event : BotEvent = {
             if(oldState.channelId == newState.channelId) return;
             if(!oldState.channelId && newState.channelId){
                 const embed = new Discord.EmbedBuilder()
-                .setColor(await newState.client.embedColor(newState.member.user))
+                .setColor(`Green` as ColorResolvable)
                 .setAuthor({ name: "Voice Channel Join", iconURL: newState.member.user.avatarURL() })
                 .addFields(
-                    { name: "Member", value: newState.member.user.tag, inline: true },
+                    { name: "Member", value: newState.member.user.toString(), inline: true },
                     { name: "Channel", value: newState.channel.toString(), inline: true },
                 )
                 .setTimestamp()
@@ -62,10 +63,10 @@ const event : BotEvent = {
             if(oldState.channelId == newState.channelId) return;
             if(oldState.channelId && !newState.channelId){
                 const embed = new Discord.EmbedBuilder()
-                .setColor(await newState.client.embedColor(newState.member.user))
+                .setColor(`Red` as ColorResolvable)
                 .setAuthor({ name: "Voice Channel Leave", iconURL: newState.member.user.avatarURL() })
                 .addFields(
-                    { name: "Member", value: newState.member.user.tag, inline: true },
+                    { name: "Member", value: newState.member.user.toString(), inline: true },
                     { name: "Channel", value: oldState.channel.toString(), inline: true },
                 )
                 .setTimestamp()
@@ -81,10 +82,10 @@ const event : BotEvent = {
             });
             const deletionLog = fetchedLogs.entries.first();
             const embed = new Discord.EmbedBuilder()
-            .setColor(await messages.first().client.embedColor(messages.first().author))
+            .setColor(`DarkRed` as ColorResolvable)
             .setAuthor({ name: "Bulk Message Delete", iconURL: messages.first().author.avatarURL() })
             .addFields(
-                { name: "Executor", value: deletionLog?.executor?.tag || "Unknown"},
+                { name: "Executor", value: deletionLog?.executor?.toString() || "Unknown", inline: true},
                 { name: "Channel", value: messages.first().channel.toString(), inline: true },
                 { name: "Messages", value: messages.size.toString(), inline: true }
             )
@@ -102,12 +103,10 @@ const event : BotEvent = {
             if(message.content == "") return;
             const deletionLog = fetchedLogs.entries.first();
             const embed = new Discord.EmbedBuilder()
-            .setColor(await message.client.embedColor(message.author))
+            .setColor(`Red` as ColorResolvable)
             .setAuthor({ name: "Message Deleted", iconURL: message.author.avatarURL() })
-            .setDescription(`Created <t:${Math.floor(message.createdTimestamp / 1000)}:R>`)
             .addFields(
-                { name: "Executor", value: deletionLog?.executor?.tag || "Unknown"},
-                { name: "Author", value: message.author.tag, inline: true },
+                { name: "Author", value: message.author.toString(), inline: true },
                 { name: "Channel", value: message.channel.toString(), inline: true },
                 { name: "Message", value: message.content, inline: false }
             )
@@ -117,16 +116,15 @@ const event : BotEvent = {
         })
 
         client.on("messageUpdate", async (oldMessage: any, newMessage: any) => {
-            if(oldMessage.author.bot) return;
+            if(newMessage.author.bot) return;
             if(oldMessage.content == newMessage.content) return;
             const isInvite = /(https?:\/\/)?(www\.)?(discord\.(gg|io|me|li)|discordapp\.com\/invite)\/.+/.test(newMessage.content);
             if(isInvite){
                 const invite = await (client.fetchInvite(newMessage.content.split("discord.gg/")[1]) as any).catch(async() => {const embed = new Discord.EmbedBuilder()
-                    .setColor(await oldMessage.client.embedColor(oldMessage.author))
-                    .setAuthor({ name: "Message Edited", iconURL: oldMessage.author.avatarURL() })
-                    .setDescription(`[[Jump to Message]](${newMessage.url}) ~ ***Edited <t:${Math.floor(newMessage.editedTimestamp / 1000)}:R>***`)
+                    .setColor(`DarkGold` as ColorResolvable)
+                    .setAuthor({ name: "Message Edited", iconURL: oldMessage.author.avatarURL(), url: newMessage.url })
                     .addFields(
-                        { name: "Author", value: oldMessage.author.tag, inline: true },
+                        { name: "Author", value: oldMessage.author.toString(), inline: true },
                         { name: "Channel", value: oldMessage.channel.toString(), inline: true },
                         { name: "Old Message", value: oldMessage.content, inline: false },
                         { name: "New Message", value: newMessage.content, inline: false }
@@ -137,14 +135,13 @@ const event : BotEvent = {
                 return});
                 
                 const embed = new Discord.EmbedBuilder()
-                .setColor(await newMessage.client.embedColor(newMessage.author))
+                .setColor(`DarkGold` as ColorResolvable)
                 .setAuthor({ name: "Invite Detected", iconURL: newMessage.author.avatarURL() })
-                .setDescription(`Edited <t:${Math.floor(newMessage.editedTimestamp / 1000)}:R>`)
                 .addFields(
-                    { name: "Author", value: oldMessage.author.tag, inline: true },
+                    { name: "Author", value: oldMessage.author.toString(), inline: true },
                     { name: "Channel", value: oldMessage.channel.toString(), inline: true },
                     { name: "Server", value: invite.guild.name, inline: true },
-                    { name: "Members", value: invite.guild.memberCount ? invite.guild.memberCount.toString() : 'Not able to determine', inline: true },
+                    { name: "Members", value: invite.guild.memberCount ? invite.guild?.memberCount.toString() : 'Not able to determine', inline: true },
                 )
                 .setTimestamp()
 
@@ -164,11 +161,10 @@ const event : BotEvent = {
                 return
             }
             const embed = new Discord.EmbedBuilder()
-            .setColor(await oldMessage.client.embedColor(oldMessage.author))
-            .setAuthor({ name: "Message Edited", iconURL: oldMessage.author.avatarURL() })
-            .setDescription(`[[Jump to Message]](${newMessage.url}) ~ ***Edited <t:${Math.floor(newMessage.editedTimestamp / 1000)}:R>***`)
+            .setColor(`DarkGold` as ColorResolvable)
+            .setAuthor({ name: "Message Edited", iconURL: oldMessage.author.avatarURL(), url: newMessage.url })
             .addFields(
-                { name: "Author", value: oldMessage.author.tag, inline: true },
+                { name: "Author", value: oldMessage.author.toString(), inline: true },
                 { name: "Channel", value: oldMessage.channel.toString(), inline: true },
                 { name: "Old Message", value: oldMessage.content, inline: false },
                 { name: "New Message", value: newMessage.content, inline: false }
@@ -184,13 +180,11 @@ const event : BotEvent = {
                 type: AuditLogEvent.ChannelCreate,
             });
             const embed = new Discord.EmbedBuilder()
-            .setColor(await channel.client.embedUrlColor(channel.guild.iconURL()))
-            .setTitle("Channel Created")
-            .setDescription(`[[Jump to Channel]](${channel.url}) ~ ***Created <t:${Math.floor(channel.createdTimestamp / 1000)}:R>***`)
+            .setColor(`DarkGreen` as ColorResolvable)
+            .setAuthor({ name: "Channel Created", iconURL: channel.guild.iconURL(), url: `https://discord.com/channels/${channel.guild.id}/${channel.id}` })
             .addFields(
-                { name: "Executor", value: fetchedLogs.entries.first()?.executor?.tag || "Unknown"},
+                { name: "Executor", value: fetchedLogs.entries.first()?.executor?.toString() || "Unknown", inline: true},
                 { name: "Channel", value: channel.toString(), inline: true },
-                { name: "Type", value: channel.type, inline: true }
             )
             .setTimestamp()
             .setFooter({ text: `ID: ${channel.id}` })
@@ -203,13 +197,11 @@ const event : BotEvent = {
                 type: AuditLogEvent.ChannelDelete,
             });
             const embed = new Discord.EmbedBuilder()
-            .setColor(await channel.client.embedUrlColor(channel.guild.iconURL()))
-            .setTitle("Channel Deleted")
-            .setDescription(`Created <t:${Math.floor(channel.createdTimestamp / 1000)}:R>`)
+            .setColor(`DarkRed` as ColorResolvable)
+            .setAuthor({ name: "Channel Deleted", iconURL: channel.guild.iconURL(), url: `https://discord.com/channels/${channel.guild.id}/${channel.id}` })
             .addFields(
-                { name: "Executor", value: fetchedLogs.entries.first()?.executor?.tag || "Unknown"},
-                { name: "Channel", value: channel.toString(), inline: true },
-                { name: "Type", value: `${channel.type}`, inline: true }
+                { name: "Executor", value: fetchedLogs.entries.first()?.executor?.toString() || "Unknown", inline: true},
+                { name: "Channel", value: channel.name, inline: true },
             )
             .setTimestamp()
             .setFooter({ text: `ID: ${channel.id}` })
@@ -222,20 +214,33 @@ const event : BotEvent = {
                 limit: 1,
                 type: AuditLogEvent.ChannelUpdate,
             });
+            if(oldChannel.name !== newChannel.name) {
             const embed = new Discord.EmbedBuilder()
-            .setColor(await oldChannel.client.embedUrlColor(oldChannel.guild.iconURL()))
-            .setTitle("Channel Updated")
-            .setDescription(`[[Jump to Channel]](${newChannel.url}) ~ ***Updated <t:${Math.floor(newChannel.createdTimestamp / 1000)}:R>***`)
+            .setColor(`DarkGold` as ColorResolvable)
+            .setAuthor({ name: "Channel Name Updated", iconURL: oldChannel.guild.iconURL(), url: `https://discord.com/channels/${oldChannel.guild.id}/${oldChannel.id}` })
             .addFields(
-                { name: "Executor", value: fetchedLogs.entries.first()?.executor?.tag || "Unknown"},
+                { name: "Executor", value: fetchedLogs.entries.first()?.executor?.toString() || "Unknown", inline: true},
                 { name: "Channel", value: newChannel.toString(), inline: true },
-                { name: "Type", value: `${oldChannel.type}`, inline: true },
                 { name: "Old Name", value: oldChannel.name, inline: true },
                 { name: "New Name", value: newChannel.name, inline: true }
             )
             .setTimestamp()
             .setFooter({ text: `ID: ${oldChannel.id}` })
             await sendAudit(oldChannel.guild, embed)
+            }
+            if(oldChannel.permissions !== newChannel.permissions) {
+                const embed = new Discord.EmbedBuilder()
+                .setColor(`DarkGold` as ColorResolvable)
+                .setAuthor({ name: "Channel Permissions Updated", iconURL: oldChannel.guild.iconURL(), url: `https://discord.com/channels/${oldChannel.guild.id}/${oldChannel.id}` })
+                .addFields(
+                    { name: "Executor", value: fetchedLogs.entries.first()?.executor?.toString() || "Unknown", inline: true},
+                    { name: "Channel", value: newChannel.toString(), inline: true },
+                    { name: "New Permissions", value: newChannel.permissionOverwrites.map((p: any) => p.toString()).join(", "), inline: false }
+                )
+                .setTimestamp()
+                .setFooter({ text: `ID: ${oldChannel.id}` })
+                await sendAudit(oldChannel.guild, embed)
+            }
         })
 
         client.on("guildMemberUpdate", async (oldMember: any, newMember: any) => {
@@ -244,27 +249,29 @@ const event : BotEvent = {
                 limit: 1,
                 type: AuditLogEvent.MemberUpdate,
             });
+            if(oldMember.nickname !== newMember.nickname) {
             const embed = new Discord.EmbedBuilder()
-            .setColor(await oldMember.client.embedColor(newMember.user))
-            .setAuthor({ name: newMember.user.username+` - Nickname`, iconURL: newMember.user.avatarURL() })
+            .setColor(`DarkGold` as ColorResolvable)
+            .setAuthor({ name: `User Nickname Changed`, iconURL: newMember.user.avatarURL(), url: `https://discord.com/users/${newMember.id}` })
             .addFields(
-                { name: "Executor", value: fetchedLogs.entries.first()?.executor?.tag || "Unknown"},
-                { name: "Member", value: oldMember.user.tag, inline: true },
+                { name: "Executor", value: fetchedLogs.entries.first()?.executor?.toString() || "Unknown", inline: true},
+                { name: "Member", value: oldMember.user.toString(), inline: true },
                 { name: "Old Nickname", value: oldMember.nickname || "None", inline: true },
                 { name: "New Nickname", value: newMember.nickname || "None", inline: true }
             )
             .setTimestamp()
             .setFooter({ text: `ID: ${oldMember.id}` })
             await sendAudit(oldMember.guild, embed)
+            }
         })
 
         client.on("userUpdate", async (oldUser: any, newUser: any) => {
             if(oldUser.username == newUser.username) return;
             const embed = new Discord.EmbedBuilder()
-            .setColor(await oldUser.client.embedColor(newUser.user))
-            .setAuthor({ name: newUser.user.username+` - Username`, iconURL: newUser.user.avatarURL() })
+            .setColor(`DarkGold` as ColorResolvable)
+            .setAuthor({ name: `User Username Changed`, iconURL: newUser.user.avatarURL(), url: `https://discord.com/users/${newUser.id}` })
             .addFields(
-                { name: "Member", value: oldUser.tag, inline: true },
+                { name: "Member", value: oldUser.toString(), inline: true },
                 { name: "Old Username", value: oldUser.username, inline: true },
                 { name: "New Username", value: newUser.username, inline: true }
             )
@@ -279,26 +286,28 @@ const event : BotEvent = {
                 limit: 1,
                 type: AuditLogEvent.MemberRoleUpdate,
             });
+            if(oldMember.roles.cache.size !== newMember.roles.cache.size) {
             const embed = new Discord.EmbedBuilder()
-            .setColor(await oldMember.client.embedColor(newMember.user))
-            .setAuthor({ name: newMember.user.username+` - Roles`, iconURL: newMember.user.avatarURL() })
+            .setColor(`DarkGold` as ColorResolvable)
+            .setAuthor({ name: `User Roles Changed`, iconURL: newMember.user.avatarURL() })
             .addFields(
-                { name: "Executor", value: fetchedLogs.entries.first()?.executor?.tag || "Unknown"},
-                { name: "Member", value: oldMember.user.tag, inline: true },
+                { name: "Executor", value: fetchedLogs.entries.first()?.executor?.toString() || "Unknown", inline: true},
+                { name: "Member", value: oldMember.user.toString(), inline: true },
                 { name: "Added Roles", value: newMember.roles.cache.filter((r: any) => !oldMember.roles.cache.has(r.id)).map((r: any) => r).join(", ") || "None", inline: false },
                 { name: "Removed Roles", value: oldMember.roles.cache.filter((r: any) => !newMember.roles.cache.has(r.id)).map((r: any) => r).join(", ") || "None", inline: false }
             )
             .setTimestamp()
             .setFooter({ text: `ID: ${oldMember.id}` })
             await sendAudit(oldMember.guild, embed)
+            }
         })
 
         client.on("guildMemberAdd", async (member: any) => {
             const embed = new Discord.EmbedBuilder()
-            .setColor(await member.client.embedColor(member.user))
-            .setAuthor({ name: member.user.username+` - Joined`, iconURL: member.user.displayAvatarURL() })
+            .setColor(`Green` as ColorResolvable)
+            .setAuthor({ name: `User Server Joined`, iconURL: member.user.displayAvatarURL() })
             .addFields(
-                { name: "Member", value: member.user.tag, inline: true },
+                { name: "Member", value: member.user.toString(), inline: true },
                 { name: "Account Created", value: member.user.createdAt.toDateString(), inline: true }
             )
             .setTimestamp()
@@ -308,10 +317,10 @@ const event : BotEvent = {
 
         client.on("guildMemberRemove", async (member: any) => {
             const embed = new Discord.EmbedBuilder()
-            .setColor(await member.client.embedColor(member.user))
-            .setAuthor({ name: member.user.username+` - Left`, iconURL: member.user.displayAvatarURL() })
+            .setColor(`Red` as ColorResolvable)
+            .setAuthor({ name: `User Server Left`, iconURL: member.user.displayAvatarURL() })
             .addFields(
-                { name: "Member", value: member.user.tag, inline: true },
+                { name: "Member", value: member.user.toString(), inline: true },
                 { name: "Account Created", value: member.user.createdAt.toDateString(), inline: true },
                 { name: "Joined", value: member.joinedAt.toDateString(), inline: true }
             )
@@ -326,11 +335,11 @@ const event : BotEvent = {
                 type: AuditLogEvent.MemberBanAdd,
             });
             const embed = new Discord.EmbedBuilder()
-            .setColor(await member.client.embedColor(member.user))
-            .setAuthor({ name: member.user.username+` - Banned`, iconURL: member.user.displayAvatarURL() })
+            .setColor(`DarkGreen` as ColorResolvable)
+            .setAuthor({ name: `User Member Banned`, iconURL: member.user.displayAvatarURL() })
             .addFields(
-                { name: "Executor", value: fetchedLogs.entries.first()?.executor?.tag || "Unknown"},
-                { name: "Member", value: member.user.tag, inline: true },
+                { name: "Executor", value: fetchedLogs.entries.first()?.executor?.toString() || "Unknown", inline: true},
+                { name: "Member", value: member.user.toString(), inline: true },
                 { name: "Account Created", value: member.user.createdAt.toDateString(), inline: true },
                 { name: "Joined", value: member.joinedAt.toDateString(), inline: true }
             )
@@ -345,11 +354,11 @@ const event : BotEvent = {
                 type: AuditLogEvent.MemberBanRemove,
             });
             const embed = new Discord.EmbedBuilder()
-            .setColor(await member.client.embedColor(member.user))
-            .setAuthor({ name: member.user.username+` - Unbanned`, iconURL: member.user.displayAvatarURL() })
+            .setColor(`DarkRed` as ColorResolvable)
+            .setAuthor({ name: `User Member Unbanned`, iconURL: member.user.displayAvatarURL() })
             .addFields(
-                { name: "Executor", value: fetchedLogs.entries.first()?.executor?.tag || "Unknown"},
-                { name: "Member", value: member.user.tag, inline: true },
+                { name: "Executor", value: fetchedLogs.entries.first()?.executor?.toString() || "Unknown", inline: true},
+                { name: "Member", value: member.user.toString(), inline: true },
                 { name: "Account Created", value: member.user.createdAt.toDateString(), inline: true }
             )
             .setTimestamp()
@@ -363,11 +372,10 @@ const event : BotEvent = {
                 type: AuditLogEvent.EmojiCreate,
             });
             const embed = new Discord.EmbedBuilder()
-            .setColor(await emoji.client.embedUrlColor(emoji.url))
-            .setTitle("Emoji Created - " + emoji.name)
-            .setDescription(`[[Jump to Emoji]](${emoji.url}) ~ [Download](${emoji.url}) ~ ***Created <t:${Math.floor(emoji.createdTimestamp / 1000)}:R>***`)
+            .setColor(`DarkGreen` as ColorResolvable)
+            .setAuthor({ name: `Emoji Created`, iconURL: emoji.url, url: emoji.url })
             .addFields(
-                { name: "Executor", value: fetchedLogs.entries.first()?.executor?.tag || "Unknown"},
+                { name: "Executor", value: fetchedLogs.entries.first()?.executor?.toString() || "Unknown", inline: true},
                 { name: "Emoji", value: emoji.toString(), inline: true }
             )
             .setTimestamp()
@@ -381,11 +389,10 @@ const event : BotEvent = {
                 type: AuditLogEvent.EmojiDelete,
             });
             const embed = new Discord.EmbedBuilder()
-            .setColor(await emoji.client.embedUrlColor(emoji.url))
-            .setTitle("Emoji Deleted - " + emoji.name)
-            .setDescription(`[Download](${emoji.url}) ~ Created <t:${Math.floor(emoji.createdTimestamp / 1000)}:R>`)
+            .setColor(`DarkRed` as ColorResolvable)
+            .setAuthor({ name: `Emoji Deleted`, iconURL: emoji.url, url: emoji.url })
             .addFields(
-                { name: "Executor", value: fetchedLogs.entries.first()?.executor?.tag || "Unknown"},
+                { name: "Executor", value: fetchedLogs.entries.first()?.executor?.toString() || "Unknown", inline: true},
                 { name: "Emoji", value: emoji.toString(), inline: true }
             )
             .setTimestamp()
@@ -399,11 +406,10 @@ const event : BotEvent = {
                 type: AuditLogEvent.EmojiUpdate,
             });
             const embed = new Discord.EmbedBuilder()
-            .setColor(await oldEmoji.client.embedUrlColor(newEmoji.url))
-            .setTitle("Emoji Updated - " + oldEmoji.name + " -> " + newEmoji.name)
-            .setDescription(`[Download](${newEmoji.url}) ~ ***Updated <t:${Math.floor(newEmoji.createdTimestamp / 1000)}:R>***`)
+            .setColor(`DarkGold` as ColorResolvable)
+            .setAuthor({ name: `Emoji Updated`, iconURL: newEmoji.url, url: newEmoji.url })
             .addFields(
-                { name: "Executor", value: fetchedLogs.entries.first()?.executor?.tag || "Unknown"},
+                { name: "Executor", value: fetchedLogs.entries.first()?.executor?.toString() || "Unknown", inline: true},
                 { name: "Emoji", value: oldEmoji.toString(), inline: true },
                 { name: "Old Name", value: oldEmoji.name, inline: true },
                 { name: "New Name", value: newEmoji.name, inline: true }
@@ -419,11 +425,10 @@ const event : BotEvent = {
                 type: AuditLogEvent.RoleCreate,
             });
             const embed = new Discord.EmbedBuilder()
-            .setColor(await role.hexColor)
-            .setTitle("Role Created - " + role.name)
-            .setDescription(`***Created <t:${Math.floor(role.createdTimestamp / 1000)}:R>***`)
+            .setColor(`DarkGreen` as ColorResolvable)
+            .setAuthor({ name: `Role Created`, iconURL: role.guild.iconURL(), url: role.guild.iconURL() })
             .addFields(
-                { name: "Executor", value: fetchedLogs.entries.first()?.executor?.tag || "Unknown"},
+                { name: "Executor", value: fetchedLogs.entries.first()?.executor?.toString() || "Unknown", inline: true},
                 { name: "Role", value: role.toString(), inline: true }
             )
             .setTimestamp()
@@ -437,11 +442,10 @@ const event : BotEvent = {
                 type: AuditLogEvent.RoleDelete,
             });
             const embed = new Discord.EmbedBuilder()
-            .setColor(await role.hexColor)
-            .setTitle("Role Deleted - " + role.name)
-            .setDescription(`Created <t:${Math.floor(role.createdTimestamp / 1000)}:R>`)
+            .setColor(`DarkRed` as ColorResolvable)
+            .setAuthor({ name: `Role Deleted`, iconURL: role.guild.iconURL(), url: role.guild.iconURL() })
             .addFields(
-                { name: "Executor", value: fetchedLogs.entries.first()?.executor?.tag || "Unknown"},
+                { name: "Executor", value: fetchedLogs.entries.first()?.executor?.toString() || "Unknown", inline: true},
                 { name: "Role", value: role.toString(), inline: true }
             )
             .setTimestamp()
@@ -454,12 +458,13 @@ const event : BotEvent = {
                 limit: 1,
                 type: AuditLogEvent.RoleUpdate,
             });
+
+            if(oldRole.name !== newRole.name) {
             const embed = new Discord.EmbedBuilder()
-            .setColor(await newRole.hexColor)
-            .setTitle("Role Updated - " + oldRole.name + " -> " + newRole.name)
-            .setDescription(`***Updated <t:${Math.floor(newRole.createdTimestamp / 1000)}:R>***`)
+            .setColor(`DarkGold` as ColorResolvable)
+            .setAuthor({ name: `Role Name Updated`, iconURL: oldRole.guild.iconURL(), url: oldRole.guild.iconURL() })
             .addFields(
-                { name: "Executor", value: fetchedLogs.entries.first()?.executor?.tag || "Unknown"},
+                { name: "Executor", value: fetchedLogs.entries.first()?.executor?.toString() || "Unknown", inline: true},
                 { name: "Role", value: oldRole.toString(), inline: true },
                 { name: "Old Name", value: oldRole.name, inline: true },
                 { name: "New Name", value: newRole.name, inline: true }
@@ -467,6 +472,21 @@ const event : BotEvent = {
             .setTimestamp()
             .setFooter({ text: `ID: ${oldRole.id}` })
             await sendAudit(oldRole.guild, embed)
+            }
+            if(oldRole.icon !== newRole.icon) {
+                const embed = new Discord.EmbedBuilder()
+                .setColor(`DarkGold` as ColorResolvable)
+                .setAuthor({ name: `Role Icon Updated`, iconURL: newRole.guild.iconURL(), url: newRole.guild.iconURL() })
+                .addFields(
+                    { name: "Executor", value: fetchedLogs.entries.first()?.executor?.toString() || "Unknown", inline: true},
+                    { name: "Role", value: oldRole.toString(), inline: true },
+                    { name: "Old Icon", value: oldRole.iconURL() ? `[\`Click here\`](${oldRole.iconURL()})` : 'None', inline: true },
+                    { name: "New Icon", value: newRole.iconURL() ? `[\`Click here\`](${newRole.iconURL()})` : 'None', inline: true }
+                )
+                .setTimestamp()
+                .setFooter({ text: `ID: ${newRole.id}` })
+                await sendAudit(oldRole.guild, embed)
+            }
         })
 
     }

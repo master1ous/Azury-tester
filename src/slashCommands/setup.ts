@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, ChannelType, TextChannel, EmbedBuilder, CommandInteraction, SlashCommandSubcommandBuilder, ChatInputCommandInteraction, ButtonBuilder, MessageEvent, ButtonInteraction, Message, StringSelectMenuBuilder } from "discord.js"
+import { SlashCommandBuilder, PermissionFlagsBits, ChannelType, TextChannel, EmbedBuilder, CommandInteraction, SlashCommandSubcommandBuilder, ChatInputCommandInteraction, ButtonBuilder, MessageEvent, ButtonInteraction, Message, StringSelectMenuBuilder } from "discord.js"
 import Discord from "discord.js";
 import { SlashCommand } from "../types";
 import settingsModule from "../schemas/Settings";
@@ -37,7 +37,7 @@ const command: SlashCommand = {
 
     execute: async (interaction) => {
         const client = interaction.client
-        if(!(interaction.member.permissions as any).has('ADMINISTRATOR')) return interaction.reply({ content: `You need to have the \`ADMINISTRATOR\` permission to use this command`, ephemeral: true })
+        if(!(interaction.member.permissions as any).has(PermissionFlagsBits.Administrator)) return interaction.reply({ content: `You need to have the \`ADMINISTRATOR\` permission to use this command`, ephemeral: true })
 
         
         if((interaction.options as any).getSubcommand() == 'sticky') {
@@ -50,15 +50,17 @@ const command: SlashCommand = {
                 new Discord.ButtonBuilder()
                 .setCustomId('setup-sticky')
                 .setLabel('Add sticky')
-                .setStyle(Discord.ButtonStyle.Primary),
-                new Discord.ButtonBuilder()
-                .setCustomId('setup-sticky-remove')
-                .setLabel('Remove sticky')
-                .setStyle(Discord.ButtonStyle.Danger)
+                .setStyle(Discord.ButtonStyle.Primary)
+              
             )
 
             if(!data?.sticky_messages){
                 row.addComponents(
+                    new Discord.ButtonBuilder()
+                    .setCustomId('setup-sticky-remove')
+                    .setLabel('Remove sticky')
+                    .setStyle(Discord.ButtonStyle.Danger)
+                    .setDisabled(true),
                     new Discord.ButtonBuilder()
                     .setCustomId('setup-sticky-edit')
                     .setLabel('Edit sticky')
@@ -67,6 +69,10 @@ const command: SlashCommand = {
                 )
             } else {
                 row.addComponents(
+                    new Discord.ButtonBuilder()
+                    .setCustomId('setup-sticky-remove')
+                    .setLabel('Remove sticky')
+                    .setStyle(Discord.ButtonStyle.Danger),
                     new Discord.ButtonBuilder()
                     .setCustomId('setup-sticky-edit')
                     .setLabel('Edit sticky')

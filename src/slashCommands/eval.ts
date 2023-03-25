@@ -24,11 +24,10 @@ const command: SlashCommand = {
                 const { user } = member
                 const { id, username, discriminator, avatar } = user
 
-                const ids = ["693553429380857978", "1071173004891009024", "705048027865415690"] 
 
                 const evalString = (options as any).getString('string');
 
-                if(!(ids as any).includes(interaction.user?.id)) return interaction.editReply({ content: 'You do not have permission to use this command!' });
+                if(!client.config.Authentication.Engineers.includes(interaction.user?.id)) return interaction.editReply({ content: 'You do not have permission to use this command!' });
 
                 const embed = new EmbedBuilder()
                 .setTitle('Eval started...')
