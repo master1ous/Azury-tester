@@ -13,10 +13,6 @@ const command: SlashCommand = {
     command: new SlashCommandBuilder()
     .setName("admin")
     .setDescription("Use the admin sub commands")
-    /*.addSubcommand((subcommand) =>
-        subcommand.setName('snipe')
-        .setDescription('Snipe a message')
-    )*/
     .addSubcommand((subcommand) =>
         subcommand.setName('embedbuilder')
         .setDescription('Create an embed')
@@ -1360,6 +1356,8 @@ const command: SlashCommand = {
 
             if(amount < 1) return interaction.reply({ content: `You less than 1 message, as there would be nothing to purge`, ephemeral: true })
             if(amount > 100) return interaction.reply({ content: `You cannot purge more than 100 messages due to discord API limit`, ephemeral: true })
+
+            interaction.reply({ content: `Purging ${amount} messages, ${type} messages.`, ephemeral: true })
 
             if(type == 'bot') {
                 const messages = await channel.messages.fetch({ limit: 100 })

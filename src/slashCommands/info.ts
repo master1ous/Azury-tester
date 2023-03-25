@@ -4,7 +4,6 @@ import { SlashCommand, SlashCommandList } from "../types";
 import { PasteClient, Publicity, ExpireDate } from "pastebin-api";
 import { pagesystem } from "../functions";
 import ms = require("ms")
-import { arrayBuffer } from "stream/consumers";
 import os from 'os'
 import { isFunctionExpression } from "typescript";
 import { execSync } from "child_process";
@@ -32,9 +31,29 @@ const command: SlashCommand = {
         subcommand.setName('guide')
             .setDescription('Shows the bot\'s guiding')
     )
+    .addSubcommandGroup((group) =>
+    group.setName('server')
+            .setDescription('Shows the server sub commands')
     .addSubcommand((subcommand) =>
-    subcommand.setName('serverinfo')
+        subcommand.setName('info')
             .setDescription('Shows the server\'s info')
+    )
+    .addSubcommand((subcommand) =>
+        subcommand.setName('shard')
+            .setDescription('Shows the server\'s shard')
+    )
+    .addSubcommand((subcommand) =>
+        subcommand.setName('boosters')
+            .setDescription('Shows the server\'s boosters')
+    )
+    .addSubcommand((subcommand) =>
+        subcommand.setName('channels')
+            .setDescription('Shows the server\'s channels')
+    )
+    .addSubcommand((subcommand) =>
+        subcommand.setName('roles')
+            .setDescription('Shows the server\'s roles')
+    )
     )
     .addSubcommand((subcommand) =>
     subcommand.setName('premium')
@@ -98,6 +117,107 @@ const command: SlashCommand = {
     ),
             execute: async (interaction) => {
                 const client = interaction.client
+                if((interaction.options as any).getSubcommandGroup() == 'server') {
+                    if((interaction.options as any).getSubcommand() == 'info') {
+                        await interaction.deferReply({ ephemeral: true })
+
+                        
+                        const embed = new EmbedBuilder()
+                        .setAuthor({ name: await client.translate(`Info for`, interaction.guild?.id)+` ${interaction.guild?.name}`, iconURL: interaction.guild?.iconURL() })
+                        .setColor(await interaction.client.embedColor(interaction.user))
+                        .setTimestamp()
+                        .setFooter({ text: `Cactus Bot - GID: ${interaction.guild?.id}`, iconURL: interaction.client.user?.displayAvatarURL() })
+                        .addFields(
+                        { name: await client.translate(`Name`, interaction.guild?.id), value: interaction.guild?.name||await client.translate('No name', interaction.guild?.id), inline: true },
+                        { name: await client.translate(`Owner`, interaction.guild?.id), value: `<@${interaction.guild?.ownerId}>`, inline: true },
+                        { name: await client.translate(`Created at`, interaction.guild?.id), value: `<t:${Math.floor(interaction.guild?.createdAt.getTime() / 1000)}:R>`, inline: true },
+                        { name: await client.translate(`Members`, interaction.guild?.id), value: interaction.guild?.memberCount ? `${interaction.guild?.memberCount}` : await client.translate('No members', interaction.guild?.id), inline: true },
+                        { name: await client.translate(`Channels`, interaction.guild?.id), value: interaction.guild?.channels.cache.size ? `${interaction.guild?.channels.cache.size}` : await client.translate('No channels', interaction.guild?.id), inline: true },
+                        { name: await client.translate(`Roles`, interaction.guild?.id), value: interaction.guild?.roles.cache.size ? `${interaction.guild?.roles.cache.size}` : await client.translate('No roles', interaction.guild?.id), inline: true },
+                        { name: await client.translate(`Emojis`, interaction.guild?.id), value: interaction.guild?.emojis.cache.size ? `${interaction.guild?.emojis.cache.size}` : await client.translate('No emojis', interaction.guild?.id), inline: true },
+                        { name: await client.translate(`Boosts`, interaction.guild?.id), value: interaction.guild?.premiumSubscriptionCount ? `${interaction.guild?.premiumSubscriptionCount}` : await client.translate('No boosts', interaction.guild?.id), inline: true },
+                        { name: await client.translate(`Boost tier`, interaction.guild?.id), value: interaction.guild?.premiumTier ? `${interaction.guild?.premiumTier}` : await client.translate('No boost tier', interaction.guild?.id), inline: true },
+                        { name: await client.translate(`AFK channel`, interaction.guild?.id), value: interaction.guild?.afkChannel ? `<#${interaction.guild?.afkChannelId}>` : await client.translate(`No AFK channel`, interaction.guild?.id), inline: true },
+                        { name: await client.translate(`AFK timeout`, interaction.guild?.id), value: interaction.guild?.afkTimeout ? `${ms(interaction.guild?.afkTimeout, { long: true })}` : await client.translate(`No AFK timeout`, interaction.guild?.id), inline: true },
+                        { name: await client.translate(`System channel`, interaction.guild?.id), value: interaction.guild?.systemChannel ? `<#${interaction.guild?.systemChannelId}>` : await client.translate(`No system channel`, interaction.guild?.id), inline: true },
+                        { name: await client.translate(`Rules channel`, interaction.guild?.id), value: interaction.guild?.rulesChannel ? `<#${interaction.guild?.rulesChannelId}>` : await client.translate(`No rules channel`, interaction.guild?.id), inline: true },
+                        { name: await client.translate(`Public updates channel`, interaction.guild?.id), value: interaction.guild?.publicUpdatesChannel ? `<#${interaction.guild?.publicUpdatesChannelId}>` : await client.translate(`No public updates channel`, interaction.guild?.id), inline: true },
+                        { name: await client.translate(`Banner`, interaction.guild?.id), value: interaction.guild?.banner ? `[${await client.translate(`Click here`, interaction.guild?.id)}](${interaction.guild?.bannerURL({ size: 2048 })})` : await client.translate(`No banner`, interaction.guild?.id), inline: true },
+                        { name: await client.translate(`Splash`, interaction.guild?.id), value: interaction.guild?.splash ? `[${await client.translate(`Click here`, interaction.guild?.id)}](${interaction.guild?.splashURL({ size: 2048 })})` : await client.translate(`No splash`, interaction.guild?.id), inline: true },
+                        { name: await client.translate(`Discovery splash`, interaction.guild?.id), value: interaction.guild?.discoverySplash ? `[${await client.translate(`Click here`, interaction.guild?.id)}](${interaction.guild?.discoverySplashURL({ size: 2048 })})` : await client.translate(`No discovery splash`, interaction.guild?.id), inline: true },
+                        { name: await client.translate(`Icon`, interaction.guild?.id), value: interaction.guild?.icon ? `[${await client.translate(`Click here`, interaction.guild?.id)}](${interaction.guild?.iconURL({ size: 2048 })})` : await client.translate(`No icon`, interaction.guild?.id), inline: true },
+                        { name: await client.translate(`Vanity URL`, interaction.guild?.id), value: interaction.guild?.vanityURLCode ? `discord.gg/${interaction.guild?.vanityURLCode}` : await client.translate(`No vanity URL`, interaction.guild?.id), inline: true },
+                    )
+
+                      await interaction.editReply({ embeds: [embed] })
+                    } 
+                    if((interaction.options as any).getSubcommand() == 'shard') {
+                        await interaction.deferReply({ ephemeral: true })
+
+                        const embed = new EmbedBuilder()
+                        .setTitle(await client.translate(`Shard`, interaction.guild?.id))
+                        .setColor(await interaction.client.embedColor(interaction.user))
+                        .setDescription(await client.translate(`Shard ID: ${interaction.guild?.shardId}`, interaction.guild?.id))
+                        .setFooter({ text: await client.translate(`Requested by ${interaction.user.tag}`, interaction.guild?.id), iconURL: interaction.user.displayAvatarURL() })
+                        .setTimestamp()
+
+                        await interaction.editReply({ embeds: [embed] })
+                    }
+                    if((interaction.options as any).getSubcommand() == 'boosters') {
+                        await interaction.deferReply({ ephemeral: true })
+
+                        const embed = new EmbedBuilder()
+                        .setTitle(await client.translate(`Boosters`, interaction.guild?.id))
+                        .setColor(await interaction.client.embedColor(interaction.user))
+                        .setDescription(await client.translate(`Boosters: ${interaction.guild?.premiumSubscriptionCount}`, interaction.guild?.id))
+                        .setFooter({ text: await client.translate(`Requested by ${interaction.user.tag}`, interaction.guild?.id), iconURL: interaction.user.displayAvatarURL() })
+                        .setTimestamp()
+
+                        await interaction.editReply({ embeds: [embed] })
+                    }
+                    if((interaction.options as any).getSubcommand() == 'channels') {
+                        await interaction.deferReply({ ephemeral: true })
+
+                        const embed = new EmbedBuilder()
+                        .setTitle(await client.translate(`Channels`, interaction.guild?.id))
+                        .setColor(await interaction.client.embedColor(interaction.user))
+                        .setDescription(await client.translate(`Channels: ${interaction.guild?.channels.cache.size}`, interaction.guild?.id))
+                        .addFields(
+                            { name: await client.translate(`Text channels`, interaction.guild?.id), value: `${interaction.guild?.channels.cache.filter(c => c.type == 0).size}`, inline: true },
+                            { name: await client.translate(`Voice channels`, interaction.guild?.id), value: `${interaction.guild?.channels.cache.filter(c => c.type == 2).size}`, inline: true },
+                            { name: await client.translate(`Categories`, interaction.guild?.id), value: `${interaction.guild?.channels.cache.filter(c => c.type == 4).size}`, inline: true },
+                            { name: await client.translate(`News channels`, interaction.guild?.id), value: `${interaction.guild?.channels.cache.filter(c => c.type == 5).size}`, inline: true },
+                            { name: await client.translate(`Stage channels`, interaction.guild?.id), value: `${interaction.guild?.channels.cache.filter(c => c.type == 13).size}`, inline: true },
+                            { name: 'Thread Channels', value: `${interaction.guild?.channels.cache.filter(c => c.type == 11).size}`, inline: true },
+                        )
+                        .setFooter({ text: await client.translate(`Requested by ${interaction.user.tag}`, interaction.guild?.id), iconURL: interaction.user.displayAvatarURL() })
+                        .setTimestamp()
+
+                        await interaction.editReply({ embeds: [embed] })
+                    }
+                    if((interaction.options as any).getSubcommand() == 'roles') {
+                        await interaction.deferReply({ ephemeral: true })
+
+                        const embed = new EmbedBuilder()
+                        .setTitle(await client.translate(`Roles`, interaction.guild?.id))
+                        .setColor(await interaction.client.embedColor(interaction.user))
+                        .setDescription(await client.translate(`Roles: ${interaction.guild?.roles.cache.size}`, interaction.guild?.id))
+                        .addFields(
+                            // show the used roles and map them and if too long show ...and {x} more
+                            { name: await client.translate(`Used roles`, interaction.guild?.id), value: `${interaction.guild?.roles.cache.filter(r => r.members.size != 0).map(r => r).join(', ').length > 900 ? `${interaction.guild?.roles.cache.filter(r => r.members.size != 0).map(r => r).join(', ').slice(0, 900)}...and ${interaction.guild?.roles.cache.filter(r => r.members.size != 0).map(r => r).join(', ').length - interaction.guild?.roles.cache.filter(r => r.members.size != 0).map(r => r).join(', ').slice(0, 900).length} more` : interaction.guild?.roles.cache.filter(r => r.members.size != 0).map(r => r).join(', ')}`, inline: false },
+                            // show the unused roles and map them and if too long show ...and {x} more
+                            { name: await client.translate(`Unused roles`, interaction.guild?.id), value: `${interaction.guild?.roles.cache.filter(r => r.members.size == 0).map(r => r).join(', ').length > 900 ? `${interaction.guild?.roles.cache.filter(r => r.members.size == 0).map(r => r).join(', ').slice(0, 900)}...and ${interaction.guild?.roles.cache.filter(r => r.members.size == 0).map(r => r).join(', ').length - interaction.guild?.roles.cache.filter(r => r.members.size == 0).map(r => r).join(', ').slice(0, 900).length} more` : interaction.guild?.roles.cache.filter(r => r.members.size == 0).map(r => r).join(', ')}`, inline: false },
+                            // show the roles which have color and map them and if too long show ...and {x} more
+                            { name: await client.translate(`Colored roles`, interaction.guild?.id), value: `${interaction.guild?.roles.cache.filter(r => r.color != 0).map(r => r).join(', ').length > 900 ? `${interaction.guild?.roles.cache.filter(r => r.color != 0).map(r => r).join(', ').slice(0, 900)}...and ${interaction.guild?.roles.cache.filter(r => r.color != 0).map(r => r).join(', ').length - interaction.guild?.roles.cache.filter(r => r.color != 0).map(r => r).join(', ').slice(0, 900).length} more` : interaction.guild?.roles.cache.filter(r => r.color != 0).map(r => r).join(', ')}`, inline: false },
+                            // show the roles which have no color and map them and if too long show ...and {x} more which shows the amount of roles left
+                            { name: await client.translate(`Uncolored roles`, interaction.guild?.id), value: `${interaction.guild?.roles.cache.filter(r => r.color == 0).map(r => r).join(', ').length > 900 ? `${interaction.guild?.roles.cache.filter(r => r.color == 0).map(r => r).join(', ').slice(0, 900)}...and ${interaction.guild?.roles.cache.filter(r => r.color == 0).map(r => r).join(', ').length - interaction.guild?.roles.cache.filter(r => r.color == 0).map(r => r).join(', ').slice(0, 900).length} more` : interaction.guild?.roles.cache.filter(r => r.color == 0).map(r => r).join(', ')}`, inline: false },
+                        )
+                        .setFooter({ text: await client.translate(`Requested by ${interaction.user.tag}`, interaction.guild?.id), iconURL: interaction.user.displayAvatarURL() })
+                        .setTimestamp()
+
+                        await interaction.editReply({ embeds: [embed] })
+                    }
+                }
                 if((interaction.options as any).getSubcommand() == 'premium') {
                     const user = (interaction.options as any).getUser('user') || null
                     await interaction.deferReply({ ephemeral: true })
@@ -146,38 +266,6 @@ const command: SlashCommand = {
                         { name: await client.translate(`Permissions`, interaction.guild?.id), value: channel.permissionsFor(interaction.guild?.roles.everyone)?.toArray().join(', ')||await client.translate('No permissions', interaction.guild?.id), inline: false },
                         )
                         await interaction.editReply({ embeds: [embed] })
-                }
-                if((interaction.options as any).getSubcommand() == 'serverinfo') {
-                        await interaction.deferReply({ ephemeral: true })
-
-                        const embed = new EmbedBuilder()
-                        .setAuthor({ name: await client.translate(`Info for`, interaction.guild?.id)+` ${interaction.guild?.name}`, iconURL: interaction.guild?.iconURL() })
-                        .setColor(await interaction.client.embedColor(interaction.user))
-                        .setTimestamp()
-                        .setFooter({ text: `Cactus Bot - GID: ${interaction.guild?.id}`, iconURL: interaction.client.user?.displayAvatarURL() })
-                        .addFields(
-                        { name: await client.translate(`Name`, interaction.guild?.id), value: interaction.guild?.name||await client.translate('No name', interaction.guild?.id), inline: true },
-                        { name: await client.translate(`Owner`, interaction.guild?.id), value: `<@${interaction.guild?.ownerId}>`, inline: true },
-                        { name: await client.translate(`Created at`, interaction.guild?.id), value: `<t:${Math.floor(interaction.guild?.createdAt.getTime() / 1000)}:R>`, inline: true },
-                        { name: await client.translate(`Members`, interaction.guild?.id), value: interaction.guild?.memberCount ? `${interaction.guild?.memberCount}` : await client.translate('No members', interaction.guild?.id), inline: true },
-                        { name: await client.translate(`Channels`, interaction.guild?.id), value: interaction.guild?.channels.cache.size ? `${interaction.guild?.channels.cache.size}` : await client.translate('No channels', interaction.guild?.id), inline: true },
-                        { name: await client.translate(`Roles`, interaction.guild?.id), value: interaction.guild?.roles.cache.size ? `${interaction.guild?.roles.cache.size}` : await client.translate('No roles', interaction.guild?.id), inline: true },
-                        { name: await client.translate(`Emojis`, interaction.guild?.id), value: interaction.guild?.emojis.cache.size ? `${interaction.guild?.emojis.cache.size}` : await client.translate('No emojis', interaction.guild?.id), inline: true },
-                        { name: await client.translate(`Boosts`, interaction.guild?.id), value: interaction.guild?.premiumSubscriptionCount ? `${interaction.guild?.premiumSubscriptionCount}` : await client.translate('No boosts', interaction.guild?.id), inline: true },
-                        { name: await client.translate(`Boost tier`, interaction.guild?.id), value: interaction.guild?.premiumTier ? `${interaction.guild?.premiumTier}` : await client.translate('No boost tier', interaction.guild?.id), inline: true },
-                        { name: await client.translate(`AFK channel`, interaction.guild?.id), value: interaction.guild?.afkChannel ? `<#${interaction.guild?.afkChannelId}>` : await client.translate(`No AFK channel`, interaction.guild?.id), inline: true },
-                        { name: await client.translate(`AFK timeout`, interaction.guild?.id), value: interaction.guild?.afkTimeout ? `${ms(interaction.guild?.afkTimeout, { long: true })}` : await client.translate(`No AFK timeout`, interaction.guild?.id), inline: true },
-                        { name: await client.translate(`System channel`, interaction.guild?.id), value: interaction.guild?.systemChannel ? `<#${interaction.guild?.systemChannelId}>` : await client.translate(`No system channel`, interaction.guild?.id), inline: true },
-                        { name: await client.translate(`Rules channel`, interaction.guild?.id), value: interaction.guild?.rulesChannel ? `<#${interaction.guild?.rulesChannelId}>` : await client.translate(`No rules channel`, interaction.guild?.id), inline: true },
-                        { name: await client.translate(`Public updates channel`, interaction.guild?.id), value: interaction.guild?.publicUpdatesChannel ? `<#${interaction.guild?.publicUpdatesChannelId}>` : await client.translate(`No public updates channel`, interaction.guild?.id), inline: true },
-                        { name: await client.translate(`Banner`, interaction.guild?.id), value: interaction.guild?.banner ? `[${await client.translate(`Click here`, interaction.guild?.id)}](${interaction.guild?.bannerURL({ size: 2048 })})` : await client.translate(`No banner`, interaction.guild?.id), inline: true },
-                        { name: await client.translate(`Splash`, interaction.guild?.id), value: interaction.guild?.splash ? `[${await client.translate(`Click here`, interaction.guild?.id)}](${interaction.guild?.splashURL({ size: 2048 })})` : await client.translate(`No splash`, interaction.guild?.id), inline: true },
-                        { name: await client.translate(`Discovery splash`, interaction.guild?.id), value: interaction.guild?.discoverySplash ? `[${await client.translate(`Click here`, interaction.guild?.id)}](${interaction.guild?.discoverySplashURL({ size: 2048 })})` : await client.translate(`No discovery splash`, interaction.guild?.id), inline: true },
-                        { name: await client.translate(`Icon`, interaction.guild?.id), value: interaction.guild?.icon ? `[${await client.translate(`Click here`, interaction.guild?.id)}](${interaction.guild?.iconURL({ size: 2048 })})` : await client.translate(`No icon`, interaction.guild?.id), inline: true },
-                        { name: await client.translate(`Vanity URL`, interaction.guild?.id), value: interaction.guild?.vanityURLCode ? `discord.gg/${interaction.guild?.vanityURLCode}` : await client.translate(`No vanity URL`, interaction.guild?.id), inline: true },
-                    )
-
-                      await interaction.editReply({ embeds: [embed] })
                 }
                 if ((interaction.options as any).getSubcommand() == 'weatherinfo') {
                         await interaction.deferReply({ ephemeral: true })
@@ -402,19 +490,70 @@ const command: SlashCommand = {
                 }
         if((interaction.options as any).getSubcommand() == 'help') {
             await interaction.deferReply({ ephemeral: true })
+            
+            // make a page for each command which name starts with info, admin, setup
+            const pages = interaction.client.slashCommands.filter((command) => command.command.name.startsWith('info') || command.command.name.startsWith('admin') || command.command.name.startsWith('setup')).map(async(command) => {
+                const embed = new EmbedBuilder()
+                .setTitle(`**${command.command.name.toUpperCase()}** – \`${command.command.options.length} subcommands\``)
+                .setDescription(command.command.description)
+                .setColor(await interaction.client.embedColor(interaction.user))
+                .setTimestamp()
+                .setFooter({ text: 'Cactus Bot', iconURL: interaction.client.user?.displayAvatarURL() })
+                .addFields(
+                    { name: await client.translate(`Subcommands`, interaction.guild?.id), value: `\`/${command.command.name} ${command.command.options?.map((option: any) => option.required ? `<${option.name}>` : `[${option.name}]`).join(' ')}\``, inline: false },
+                    { name: await client.translate(`Cooldown`, interaction.guild?.id), value: `\`${command.cooldown} seconds\``, inline: false },
+                )
+                return embed
+            })
+
             const embed = new EmbedBuilder()
             .setTitle(await client.translate(`Help`, interaction.guild?.id))
-            .setDescription(await client.translate('Here are the commands for the bot', interaction.guild?.id))
+            .setDescription(await client.translate(`Use the reactions to navigate through the pages.`, interaction.guild?.id))
             .setColor(await interaction.client.embedColor(interaction.user))
             .setTimestamp()
             .setFooter({ text: 'Cactus Bot', iconURL: interaction.client.user?.displayAvatarURL() })
-            interaction.client.slashCommandsList.map(async (command) => {
-                (command as any).options.map(async (option: any) => {
-                embed.addFields({ name: `</${(command as any).name} ${(option as any).name}:${command.id}>`, value: `*`+(option as any).description+`*`, inline: true })
-                })
+            .addFields(
+                { name: await client.translate(`Info`, interaction.guild?.id), value: await client.translate(`Shows info about the bot, the server, the user, etc.`, interaction.guild?.id), inline: false },
+                { name: await client.translate(`Admin`, interaction.guild?.id), value: await client.translate(`Shows admin commands.`, interaction.guild?.id), inline: false },
+                { name: await client.translate(`Setup`, interaction.guild?.id), value: await client.translate(`Shows setup commands.`, interaction.guild?.id), inline: false },
+            )
+
+            const row = new ActionRowBuilder<ButtonBuilder>()
+            .addComponents(
+                new ButtonBuilder()
+                .setCustomId('previous')
+                .setLabel(await client.translate(`Previous`, interaction.guild?.id))
+                .setStyle(ButtonStyle.Secondary)
+                .setDisabled(false),
+                new ButtonBuilder()
+                .setCustomId('next')
+                .setLabel(await client.translate(`Next`, interaction.guild?.id))
+                .setStyle(ButtonStyle.Secondary)
+                .setDisabled(false),
+            )
+
+            const message = await interaction.editReply({ embeds: [embed], components: [row] })
+            const filter = (button: ButtonInteraction) => button.user.id == interaction.user.id;
+            const collector = (message as any).createMessageComponentCollector(filter, { time: 60000 });
+
+            let page = 0;
+            collector.on('collect', async (button: ButtonInteraction) => {
+                if(button.customId == 'next') {
+                    page++;
+                    if(page > pages.length - 1) page = 0;
+                    await button.update({ embeds: [await pages[page]], components: [row] })
+                }
+                if(button.customId == 'previous') {
+                    page--;
+                    if(page < 0) page = pages.length - 1;
+                    await button.update({ embeds: [await pages[page]], components: [row] })
+                }
             })
 
-            interaction.editReply({ embeds: [embed] })
+            collector.on('end', async () => {
+                await interaction.editReply({ components: [] })
+            })
+
         }
         if ((interaction.options as any).getSubcommand() == 'botstats') {
             await interaction.deferReply({ ephemeral: true })
@@ -429,7 +568,7 @@ const command: SlashCommand = {
                 { name: await client.translate(`Commands`, interaction.guild?.id), value: `${interaction.client.slashCommands.size}`, inline: true },
                 { name: await client.translate(`Uptime`, interaction.guild?.id), value: `${ms(interaction.client.uptime as number, { long: true })}`, inline: true },
                 { name: await client.translate(`Ping`, interaction.guild?.id), value: `${Math.round(interaction.client.ws.ping)}ms`, inline: true },
-                { name: await client.translate(`Memory`, interaction.guild?.id), value: `${(process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2)}MB`, inline: true },
+                { name: await client.translate(`Memory`, interaction.guild?.id), value: `${(process.memoryUsage().heapUsed / 900 / 900).toFixed(2)}MB`, inline: true },
                 { name: await client.translate(`Node`, interaction.guild?.id), value: `${process.version}`, inline: true },
                 { name: await client.translate(`Discord.js`, interaction.guild?.id), value: `${Discord.version}`, inline: true },
                 { name: await client.translate(`OS`, interaction.guild?.id), value: `${process.platform}`, inline: true },
@@ -448,7 +587,7 @@ interaction.editReply({ embeds: [embed] })
 
             const embed = new EmbedBuilder()
             .setTitle(await client.translate(`Invite`, interaction.guild?.id))
-            .setDescription(await client.translate(`You can invite the bot with this link:`, interaction.guild?.id)+` https://discord.com/oauth2/authorize?client_id=${interaction.client.user.id}&scope=applications.commands%20bot&permissions=8`)
+            .setDescription(await client.translate(`You can invite the bot with this [link](`, interaction.guild?.id)+` https://discord.com/oauth2/authorize?client_id=${interaction.client.user.id}&scope=applications.commands%20bot&permissions=8]`)
             .setColor(await interaction.client.embedColor(interaction.user))
             .setTimestamp()
             .setFooter({ text: 'Cactus Bot', iconURL: interaction.client.user?.displayAvatarURL() })

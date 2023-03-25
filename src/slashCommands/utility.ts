@@ -8,7 +8,6 @@ import ImagineModel from "../schemas/Imagine";
 import ms = require("ms");
 import dayjs = require("dayjs");
 import axios from "axios";
-import { isJsxFragment } from "typescript";
 
 const command: SlashCommand = {
     cooldown: 10,

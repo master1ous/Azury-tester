@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, Collection, PermissionFlagsBits,} from "discord.js";
+import { Client, GatewayIntentBits, ShardingManager, Collection, PermissionFlagsBits,} from "discord.js";
 import { SlashCommand, SlashCommandList } from "./types";
 import { config } from "dotenv";
 import { readdirSync } from "fs";

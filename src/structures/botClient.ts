@@ -1,13 +1,14 @@
-import { Client, GatewayIntentBits, Partials, ActivityType, PresenceUpdateStatus, Collection, Options, SlashCommandAssertions, PermissionsBitField, PermissionFlagsBits, ChannelType, SlashCommandBuilder, ShardClientUtil, ContextMenuCommandBuilder } from "discord.js";
+import { Client, ShardingManager, GatewayIntentBits, Partials, ActivityType, PresenceUpdateStatus, Collection, Options, SlashCommandAssertions, PermissionsBitField, PermissionFlagsBits, ChannelType, SlashCommandBuilder, ShardClientUtil, ContextMenuCommandBuilder } from "discord.js";
 import { SlashCommand, SlashCommandList } from "../types";
 import { ClusterClient, getInfo } from "discord-hybrid-sharding";
+import Cluster from "discord-hybrid-sharding";
 import { readdirSync } from "fs";
 import { join } from "path";
 export class BotClient extends Client {
     constructor() {
         super({
-            /*shardCount: getInfo().TOTAL_SHARDS,
-            shards: getInfo().SHARD_LIST,*/ // Not needed yet
+            shards: require('../config.json').Sharding.Shards,
+            shardCount: require('../config.json').Sharding.ShardCount,
             intents: [
                 GatewayIntentBits.Guilds,
                 GatewayIntentBits.GuildMembers,
@@ -52,6 +53,7 @@ export class BotClient extends Client {
         this.loadHandler()
         this.loadAntiCrash()
         this.login(require('../config.json').Authentication.Token)
+
     }
     async init() {
         return this.emit('ready', this)

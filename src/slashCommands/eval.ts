@@ -4,7 +4,6 @@ import { SlashCommand, SlashCommandList } from "../types";
 import { PasteClient, Publicity, ExpireDate } from "pastebin-api";
 import { pagesystem } from "../functions";
 import ms = require("ms")
-import { arrayBuffer } from "stream/consumers";
 
 const command: SlashCommand = {
     cooldown: 1,

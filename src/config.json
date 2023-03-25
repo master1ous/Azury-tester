@@ -5,9 +5,13 @@
         "Replicate": "Token b84b7ce18461f2daa673f06716884e08a9abf877",
         "Engineers": ["1078770321240375347", "693553429380857978", "791957021728702464", "1033733468078735451"]
     },
+    "Sharding": {
+        "Shards": [0,1,2,3,4,5,6,7],
+        "ShardCount": 8
+    },
     "Presence": {
-        "Names": ["/info", "/utility", "/settings", "/help"],
-        "Status": "online",
+        "Names": ["/info – {ShardCount} shards", "/utility – {ShardCount} shards", "/setup – {ShardCount} shards", "/help – {ShardCount} shards"],
+        "Status": "dnd",
         "Type": 2
     },
     "Database": {

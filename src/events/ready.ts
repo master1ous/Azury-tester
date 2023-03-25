@@ -10,7 +10,7 @@ const event : BotEvent = {
         console.log(color("text", `💪 Logged in as ${color("variable", client.user?.tag)}`))
         client.user?.setPresence({ activities: [ { name: ".gg/azury", type: 2 } ], status: "online" })
 
-        setInterval(() => { client.user?.setPresence({ activities: [ { name: client.config.Presence.Names[Math.random() * client.config.Presence.Names.length | 0], type: client.config.Presence.Type } ], status: client.config.Presence.Status }) }, 10000)
+        setInterval(() => { client.user?.setPresence({ activities: [ { name: client.config.Presence.Names[Math.random() * client.config.Presence.Names.length | 0].replaceAll('{ShardCount}', client.config.Sharding.ShardCount), type: client.config.Presence.Type } ], status: client.config.Presence.Status }) }, 10000)
 
         const { exec } = require("child_process");
 
