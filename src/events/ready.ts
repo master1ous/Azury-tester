@@ -24,13 +24,13 @@ const event : BotEvent = {
                 console.log(`stderr: ${stderr}`);
                 return;
             }
-            const channel = client.channels.cache.get('1053284414601297920') as any;
+            const channel = client.channels.cache.get('1089862120432205837') as any;
             const messages = await channel.messages.fetch({ limit: 100 });
             const firstArg = stdout.split(' ')[0];
                 const filtered = messages.filter((m: any) => m.content.includes(`📝 Latest commit:\n${firstArg}`));
                 if(filtered.size > 0) return;
             console.log(color("text", `📝 Latest commit: ${color("variable", stdout)}`));
-            (client.channels.cache.get('1053284414601297920') as any)?.send({ content: `📝 Latest commit:\n${stdout}`})
+            (client.channels.cache.get('1089862120432205837') as any)?.send({ content: `📝 Latest commit:\n${stdout}`})
         })
         }, 60000)
     }

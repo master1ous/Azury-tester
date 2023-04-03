@@ -39,6 +39,16 @@ const command: SlashCommand = {
         )
     )
     .addSubcommand((subcommand) =>
+        subcommand.setName('chatgpt')
+        .setDescription('Setup the chat gpt system')
+        .addChannelOption(option =>
+            option.setName('channel')
+            .addChannelTypes(ChannelType.GuildText, ChannelType.GuildNews)
+            .setDescription('The channel to set the chat gpt to')
+            .setRequired(true)
+        )
+    )
+    .addSubcommand((subcommand) =>
         subcommand.setName('audit')
         .setDescription('Setup the audit system')
     )
@@ -52,6 +62,23 @@ const command: SlashCommand = {
         const client = interaction.client
         if(!(interaction.member.permissions as any).has(PermissionFlagsBits.Administrator)) return interaction.reply({ content: `You need to have the \`ADMINISTRATOR\` permission to use this command`, ephemeral: true })
 
+        if((interaction.options as any).getSubcommand() == 'chatgpt') {
+            const channel = (interaction.options as any).getChannel('channel');
+
+            const checkPremium = await client.checkPremium(interaction.user.id);
+            if(checkPremium == false) return interaction.reply({ content: 'You dont have an active premium subcription! Only premium members can set this up.', ephemeral: true })
+            if(checkPremium == 'cactus_not_in_gu_ld') return interaction.reply({ content: 'Seems I couldn\'t check your premium status.\n• Join discord.gg/azury to be checked for premium', ephemeral: true })
+
+            const data = await settingsModule.findOne({ guildID: interaction.guild.id })
+
+            if(data.chatgpt == channel.id) {
+                return interaction.reply({ content: `Chat GPT is already set to ${channel}`, ephemeral: true })
+            } else {
+                await settingsModule.findOneAndUpdate({ guildID: interaction.guild.id }, { chatgpt: channel.id }, { upsert: true })
+
+                return interaction.reply({ content: `Set the Chat GPT channel to ${channel}\n• This overwrites all previous gpt setups!`, ephemeral: true })
+            }
+        }
         if((interaction.options as any).getSubcommand() == 'antighostmessage') {
             const type = (interaction.options as any).getString('type');
             

@@ -4,6 +4,7 @@ export default model("settings", new Schema({
     guildID: { required:true, type: String },
     language: { required: false, type: String },
     
+    chatgpt: { required: false, type: String, default: null },
     antighostmessage: { required: false, type: Boolean, default: false },
     welcome: { required: false, type: Array, default: [] },
     leave: { required: false, type: Array, default: [] },

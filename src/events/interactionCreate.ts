@@ -51,9 +51,9 @@ if(interaction.customId == "sticky-add"){
     const btnLabel = interaction.fields.getTextInputValue('sticky-Label')
     const BtnEmoji = interaction.fields.getTextInputValue('sticky-BtnEmoji')
 
-    const data = await settingsModule.findOne({ guildID: interaction.guild?.id, "sticky_messages.channel": channel})
+    const data = await settingsModule.findOne({ guildID: interaction.guild?.id})
 
-if(data) return interaction.reply({content: "There is already a sticky system in your channel? How about editing?"})
+if(data?.sticky_messages[0] && data?.sticky_messages[0].channel == channel) return interaction.reply({content: "This channel already has a sticky message!", ephemeral: true})
 
 
 const datas = await settingsModule.findOne({ guildID: interaction.guild?.id})
@@ -82,12 +82,10 @@ await interaction.reply({content: "Sticky System was successful! Check it out be
 
 
 if(!btnHtp && !btnLabel && !BtnEmoji){
-
     await interaction.channel.send({content: message}).then((msg) => {
-        if(!data) new settingsModule({ guildID: interaction.guild?.id, sticky_messages: [{ "channel": channel, "content": message, "message": msg.id }] }).save()
+        if(!data) { console.log('thisfar');new settingsModule({ guildID: interaction.guild?.id, sticky_messages: [{ "channel": channel, "content": message, "message": msg.id }] }).save() }
     else {
-        data?.sticky_messages.push({ "channel": channel, "content": message, "message": msg.id })
-        data?.save()
+        settingsModule.findOneAndUpdate({ guildID: interaction.guild?.id, "sticky_messages.channel": channel }, { $set: { "sticky_messages.$.content": message } }, { new: true }).exec()
     }
     })
 }
@@ -104,9 +102,9 @@ if(btnHtp && btnLabel && !BtnEmoji){
     ]}).then((msg) => {
         if(!data) new settingsModule({ guildID: interaction.guild?.id, sticky_messages: [{ "channel": channel, "content": message, "message": msg.id, "btnUrl": btnHtp, "btnLabel": btnLabel  }] }).save()
         else {
-            data?.sticky_messages.push({ "channel": channel, "content": message, "message": msg.id, "btnUrl": btnHtp, "btnLabel": btnLabel })
-            data?.save()
-        }
+            settingsModule.findOneAndUpdate({ guildID: interaction.guild?.id, "sticky_messages.channel": channel }, { $set: { "sticky_messages.$.content": message, "sticky_messages.$.btnUrl": btnHtp, "sticky_messages.$.btnLabel": btnLabel } }, { new: true }).exec()
+                
+            }
     })
 }
 
@@ -123,8 +121,8 @@ if(btnHtp && btnLabel && BtnEmoji){
     ]}).then((msg) => {
         if(!data) new settingsModule({ guildID: interaction.guild?.id, sticky_messages: [{ "channel": channel, "content": message, "message": msg.id, "btnUrl": btnHtp, "btnLabel": btnLabel,"btnEmoji": BtnEmoji   }] }).save()
         else {
-            data?.sticky_messages.push({ "channel": channel, "content": message, "message": msg.id, "btnUrl": btnHtp, "btnLabel": btnLabel, "btnEmoji": BtnEmoji })
-            data?.save()
+            settingsModule.findOneAndUpdate({ guildID: interaction.guild?.id, "sticky_messages.channel": channel }, { $set: { "sticky_messages.$.content": message, "sticky_messages.$.btnUrl": btnHtp, "sticky_messages.$.btnLabel": btnLabel, "sticky_messages.$.btnEmoji": BtnEmoji } }, { new: true }).exec()
+            
         }
     })
 }
@@ -159,7 +157,7 @@ if(btnHtp && btnLabel && BtnEmoji){
                     settingsModule.findOneAndUpdate({ guildID: interaction.guild?.id, "sticky_messages.channel": channel }, { $set: { "sticky_messages.$.content": message } }, { new: true }).exec()
                 }
 
-                await interaction.followUp({ content: await interaction.client.translate(`Sticky message edited to ${message}`), ephemeral: true })
+                await interaction.reply({ content: await interaction.client.translate(`Sticky message edited to ${message}`), ephemeral: true })
             }
             if(interaction.customId == "welcome-remove"){
                 const channel = interaction.fields.getTextInputValue('welcome-channel')

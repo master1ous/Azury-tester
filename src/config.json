@@ -1,16 +1,17 @@
 {
     "Authentication": {
-        "Token": "MTA3NDMwODA0Nzk2ODY3Nzk5OQ.Gs-YVn.O7WqwRcq4voncmH2uTPVYXyAW56EweZ0dqxnn0",
+        "Token": "MTA3NDMwODA0Nzk2ODY3Nzk5OQ.GGyZq2.1OiLLA5pxQuO15rnGXXxJsK9Rer06LoJFJfRiE",
         "Client_ID": "1074308047968677999",
-        "Replicate": "Token b84b7ce18461f2daa673f06716884e08a9abf877",
-        "Engineers": ["1078770321240375347", "693553429380857978", "791957021728702464", "1033733468078735451"]
+        "Replicate": "Token 753929a9b27951da199052b833edb46a82a5bce7",
+        "OpenAI": "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",
+        "Engineers": ["1078770321240375347", "693553429380857978", "791957021728702464", "1033733468078735451","862621966317912084"]
     },
     "Sharding": {
-        "Shards": [0,1,2,3,4,5,6,7],
-        "ShardCount": 8
+        "Shards": [0,1,2,3],
+        "ShardCount": 4
     },
     "Presence": {
-        "Names": ["/info – {ShardCount} shards", "/utility – {ShardCount} shards", "/setup – {ShardCount} shards", "/help – {ShardCount} shards"],
+        "Names": ["/info • {ShardCount} shards", "/utility • {ShardCount} shards", "/setup • {ShardCount} shards", "/help • {ShardCount} shards"],
         "Status": "dnd",
         "Type": 2
     },

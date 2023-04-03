@@ -8,6 +8,7 @@ import ImagineModel from "../schemas/Imagine";
 import ms = require("ms");
 import dayjs = require("dayjs");
 import axios from "axios";
+import { ButtonInteraction } from "discord.js";
 
 const command: SlashCommand = {
     cooldown: 10,
@@ -15,6 +16,15 @@ const command: SlashCommand = {
     .setName("utility")
     .setDescription("Use the utility sub commands")
     
+    .addSubcommand((subcommand) =>
+        subcommand.setName('emoji')
+            .setDescription('use the emoji command')
+            .addStringOption(option =>
+                option.setName('emote')
+                    .setRequired(true)
+                    .setDescription('Emote to action')
+            )
+    )
     .addSubcommand((subcommand) =>
 				subcommand.setName('afk')
 					.setDescription('use the afk command')
@@ -237,6 +247,81 @@ const command: SlashCommand = {
         ),
             execute: async (interaction) => {
                 const client = interaction.client
+                
+                if((interaction.options as any).getSubcommand() == 'emoji') {
+                    await interaction.deferReply({ ephemeral: false })
+                    const emoji = (interaction.options as any).getString('emote') as string
+                    if(!emoji.match(/<?(a)?:?(\w{2,32}):(\d{17,19})>?/)) return interaction.editReply({ content: 'Invalid emoji/Deafult emoji' })
+
+                    const emojiID = emoji.match(/<?(a)?:?(\w{2,32}):(\d{17,19})>?/)[3]
+                    if(emoji.match(/<?(a)?:?(\w{2,32}):(\d{17,19})>?/)[1] == 'a') {
+                        var emojiURL = `https://cdn.discordapp.com/emojis/${emojiID}.gif`
+                    } else {
+                        var emojiURL = `https://cdn.discordapp.com/emojis/${emojiID}.png`
+                    }
+                    const emojiName = emoji.match(/<?(a)?:?(\w{2,32}):(\d{17,19})>?/)[2]
+
+                    const embed = new EmbedBuilder()
+                        .setTitle(`Emoji: ${emojiName}`)
+                        .setURL(emojiURL)
+                        .setImage(emojiURL)
+                        .setColor(await interaction.client.embedColor(interaction.user))
+                        .setTimestamp()
+                        .setFooter({ text: `Requested by ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL() })
+
+                    const row = new ActionRowBuilder<ButtonBuilder>()
+                        .addComponents(
+                            new ButtonBuilder()
+                            .setLabel('Upload as Emoji')
+                            .setStyle(ButtonStyle.Secondary)
+                            .setCustomId('uploadEmoji_' + emojiID),
+                            new ButtonBuilder()
+                            .setLabel('Upload as Sticker')
+                            .setStyle(ButtonStyle.Secondary)
+                            .setCustomId('uploadSticker_' + emojiID)
+                        )
+                        
+                    const btnMSG = await interaction.editReply({ embeds: [embed], components: [row] })
+                    const filter = (btn: any) => btn.user.id == interaction.user.id
+                    const collector = btnMSG.createMessageComponentCollector({ filter, time: 60000, max: 1 })
+
+                    collector.on('collect', async (btn: any) => {
+                        if(btn.customId == 'uploadEmoji_' + emojiID) {
+                            const guild = await client.guilds.fetch(interaction.guildId)
+                            if(!(btn.member as any).permissions.has('ManageEmojisAndStickers')) return await btn.reply({ content: 'You do not have permission to upload emojis.', ephemeral: true })
+                            const emote = await guild.emojis.create({ name: emojiName, attachment: emojiURL }).catch((e) => {
+                                return btn.reply({ content: 'Failed to upload emoji, maybe you exceeded your limit or I don\'t have permissions', ephemeral: true })
+                            })
+
+                            btnMSG.edit({ components: [] })
+
+                            return btn.reply({ content: 'Your emoji has been uploaded, {emote}, {emote.id}'.replace('{emote}', emote).replace('{emote.id}', emote.id), ephemeral: false })
+                        }
+                        if(btn.customId == 'uploadSticker_' + emojiID) {
+                            const guild = await client.guilds.fetch(interaction.guildId)
+                                                        if(!(btn.member as any).permissions.has('ManageEmojisAndStickers')) return await btn.reply({ content: 'You do not have permission to upload stickers.', ephemeral: true })
+                            const sticker = await guild.stickers.create({ name: emojiName, file: emojiURL.replace('.gif', '.png'), description: 'Uploaded by ' + interaction.user.tag, tags: 'custom' }).catch((e) => {
+                                return btn.reply({ content: 'Failed to upload sticker, maybe you exceeded your limit or I don\'t have permissions', ephemeral: true })
+                            })
+
+                            btnMSG.edit({ components: [] })
+
+                            return btn.reply({ content: 'Your sticker has been uploaded, {sticker.name}, {sticker.id}'.replace('{sticker.name}', sticker.name).replace('{sticker.id}', sticker.id), stickers: [interaction.guild.stickers.cache.get(sticker.id)], ephemeral: false })
+                        }
+                    })
+
+                    collector.on('end', async (collected: any) => {
+                        const embed = new EmbedBuilder()
+                            .setTitle(`Emoji: ${emojiName}`)
+                            .setURL(emojiURL)
+                            .setImage(emojiURL)
+                            .setColor(await interaction.client.embedColor(interaction.user))
+                            .setTimestamp()
+                            .setFooter({ text: `Requested by ${interaction.user.tag}`, iconURL: interaction.user.displayAvatarURL() })
+
+                        btnMSG.edit({ embeds: [embed], components: [] })
+                    })
+                }
                 if((interaction.options as any).getSubcommand() == 'tinyurl') {
                     await interaction.deferReply({ ephemeral: true })
                     const type = (interaction.options as any).getString('type') || '1';
