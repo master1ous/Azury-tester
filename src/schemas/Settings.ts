@@ -1,9 +1,11 @@
 import { Schema, model } from "mongoose";
+import { createTrue } from "typescript";
 
 export default model("settings", new Schema({
     guildID: { required:true, type: String },
     language: { required: false, type: String },
     
+    chatgptthreads: { required: false, type: Boolean, default: true },
     chatgpt: { required: false, type: String, default: null },
     antighostmessage: { required: false, type: Boolean, default: false },
     welcome: { required: false, type: Array, default: [] },
