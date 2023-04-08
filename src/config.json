@@ -2,7 +2,7 @@
     "Authentication": {
         "Token": "MTA3NDMwODA0Nzk2ODY3Nzk5OQ.GGyZq2.1OiLLA5pxQuO15rnGXXxJsK9Rer06LoJFJfRiE",
         "Client_ID": "1074308047968677999",
-        "Replicate": "Token 753929a9b27951da199052b833edb46a82a5bce7",
+        "Replicate": "Token 46642b22b4ed7d7901d87cd4fc0f877370128ead",
         "OpenAI": "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",
         "Engineers": ["1078770321240375347", "693553429380857978", "791957021728702464", "1033733468078735451","862621966317912084"]
     },
@@ -20,7 +20,7 @@
         "Collection": "azury_testers"
     },
     "Information": {
-        "Version": "1.0.0"
+        "Version": "2.0.0"
     },
     "Keys": {
         "Weather": "a36649c8106c46549fa00826232802"

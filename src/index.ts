@@ -88,10 +88,9 @@ client.checkPremium = async function(user: string) {
     if(!guild) return false
     const member = guild.members.cache.get(user)
     if(!member) return `cactus_not_in_gu_ld`
-    const role = guild.roles.cache.get('1080509365582311644') // @Premium role
-    if(!role) return false
-    if(!member.roles.cache.has(role.id)) return false
-    return true;
+    const data = await premiumModel.findOne({ userID: user })
+    if(!data) return false
+    if(data) return true
 }
 
 client.checkURL = async function(url: any) {

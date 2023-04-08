@@ -10,6 +10,7 @@ const command: SlashCommand = {
     command: new SlashCommandBuilder()
     .setName("eval")
     .setDescription("Use the info sub commands")
+    .setDMPermission(false)
     .addStringOption(option =>
         option.setName('string')
         .setRequired(true)

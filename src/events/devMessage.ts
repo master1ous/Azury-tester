@@ -244,6 +244,24 @@ const event: BotEvent = {
                 const attachment = new Discord.AttachmentBuilder(canvas.toBuffer(), { name: "colorcanva.png" });
                 message.reply({ content: `Here is the canva for BASIC_COLOR`, files: [attachment] })
             }
+            if(message.content.startsWith("!automod")) {
+                const word = message.content.split(" ")[1];
+                if(!word) return message.reply({ content: "Please specify a word to add to automod-banned-list!" })
+                message.reply({ content: "Use discord's automod instead of this command! I created an example automod rule \"Automod-tester\"" })
+                message.guild.autoModerationRules.create({
+                    name: "Automod-Tester",
+                    eventType: 1,
+                    triggerType: 1,
+                    actions: [
+                        {
+                            type: 1,
+                        }
+                    ],
+                    triggerMetadata: {
+                        keywordFilter: [word],
+                      },
+                })
+            }
             if(message.content.startsWith("!color_from_image")) {
                 const image = message.mentions.users.first()?.displayAvatarURL() || message.attachments.first()?.url || message.content.split(" ")[1];
                 if(!image) return message.reply({ content: "Please specify an image!" })

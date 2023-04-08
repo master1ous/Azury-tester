@@ -9,12 +9,15 @@ import { isFunctionExpression } from "typescript";
 import { execSync } from "child_process";
 import axios from "axios";
 import Canvas from "canvas";
+import PremiumCode from "../schemas/PremiumCode";
+import PremiumUser from "../schemas/PremiumUser";
 
 const command: SlashCommand = {
     cooldown: 10,
     command: new SlashCommandBuilder()
     .setName("info")
     .setDescription("Use the info sub commands")
+    .setDMPermission(false)
     .addSubcommand((subcommand) =>
         subcommand.setName('botstats')
             .setDescription('Shows the bot\'s statstics')
@@ -54,15 +57,53 @@ const command: SlashCommand = {
         subcommand.setName('roles')
             .setDescription('Shows the server\'s roles')
     )
+    .addSubcommand((subcommand) =>
+        subcommand.setName('emojis')
+            .setDescription('Shows the server\'s emojis')
     )
     .addSubcommand((subcommand) =>
-    subcommand.setName('premium')
+        subcommand.setName('bans')
+            .setDescription('Shows the server\'s bans')
+    )
+    .addSubcommand((subcommand) =>
+        subcommand.setName('members')
+            .setDescription('Shows the server\'s members')
+    )
+    )
+    .addSubcommandGroup((group) =>
+    group.setName('premium')
             .setDescription('Shows the users\'s premium info')
+    .addSubcommand((subcommand) =>
+        subcommand.setName('info')
+            .setDescription('Shows the user\'s premium info')
         .addUserOption(option =>
             option.setName('user')
             .setRequired(false)
             .setDescription('Enter a user to show premium info')
         )
+    )
+    .addSubcommand((subcommand) =>
+        subcommand.setName('redeem')
+            .setDescription('Redeem a premium code')
+        .addStringOption(option =>
+            option.setName('code')
+            .setRequired(true)
+            .setDescription('Enter a premium code to redeem')
+        )
+    )
+    .addSubcommand((subcommand) =>
+        subcommand.setName('create')
+            .setDescription('Create a premium code')
+        .addStringOption(option =>
+            option.setName('expires')
+            .setRequired(true)
+            .setDescription('Enter a time to expire the premium code')
+        )
+    )
+    .addSubcommand((subcommand) =>
+        subcommand.setName('list-codes')
+            .setDescription('List all premium codes')
+    )
     )
     .addSubcommand((subcommand) =>
     subcommand.setName('weatherinfo')
@@ -112,6 +153,42 @@ const command: SlashCommand = {
                 option.setName('user')
                 .setRequired(false)
                 .setDescription('Enter a user to show info')
+            )
+        )
+        .addSubcommand((subcommand) =>
+            subcommand.setName('avatar')
+            .setDescription('Shows the users\'s avatar')
+            .addUserOption(option =>
+                option.setName('user')
+                .setRequired(false)
+                .setDescription('Enter a user to show avatar')
+            )
+        )
+        .addSubcommand((subcommand) =>
+            subcommand.setName('banner')
+            .setDescription('Shows the users\'s banner')
+            .addUserOption(option =>
+                option.setName('user')
+                .setRequired(false)
+                .setDescription('Enter a user to show banner')
+            )
+        )
+        .addSubcommand((subcommand) =>
+            subcommand.setName('badges')
+            .setDescription('Shows the users\'s badges')
+            .addUserOption(option =>
+                option.setName('user')
+                .setRequired(false)
+                .setDescription('Enter a user to show badges')
+            )
+        )
+        .addSubcommand((subcommand) =>
+            subcommand.setName('roles')
+            .setDescription('Shows the users\'s roles')
+            .addUserOption(option =>
+                option.setName('user')
+                .setRequired(false)
+                .setDescription('Enter a user to show roles')
             )
         )
     ),
@@ -217,16 +294,60 @@ const command: SlashCommand = {
 
                         await interaction.editReply({ embeds: [embed] })
                     }
+                    if((interaction.options as any).getSubcommand() == 'emojis') {
+                        await interaction.deferReply({ ephemeral: true })
+
+                        const embed = new EmbedBuilder()
+                        .setTitle(await client.translate(`Emojis`, interaction.guild?.id))
+                        .setColor(await interaction.client.embedColor(interaction.user))
+                        .setDescription(await client.translate(`Emojis: ${interaction.guild?.emojis.cache.size}`, interaction.guild?.id))
+                        .addFields(
+                            // show the total emojis in the server and if too long show ...and {x} more
+                            { name: await client.translate(`Total emojis`, interaction.guild?.id), value: `${interaction.guild?.emojis.cache.map(e => e).join(', ').length > 900 ? `${interaction.guild?.emojis.cache.map(e => e).join(', ').slice(0, 900)}...and ${interaction.guild?.emojis.cache.map(e => e).join(', ').length - interaction.guild?.emojis.cache.map(e => e).join(', ').slice(0, 900).length} more` : interaction.guild?.emojis.cache.map(e => e).join(', ')}`, inline: false },
+                            // show the animated emojis in the server and if too long show ...and {x} more
+                            { name: await client.translate(`Animated emojis`, interaction.guild?.id), value: `${interaction.guild?.emojis.cache.filter(e => e.animated == true).map(e => e).join(', ').length > 900 ? `${interaction.guild?.emojis.cache.filter(e => e.animated == true).map(e => e).join(', ').slice(0, 900)}...and ${interaction.guild?.emojis.cache.filter(e => e.animated == true).map(e => e).join(', ').length - interaction.guild?.emojis.cache.filter(e => e.animated == true).map(e => e).join(', ').slice(0, 900).length} more` : interaction.guild?.emojis.cache.filter(e => e.animated == true).map(e => e).join(', ')}`, inline: false },
+                        )
+                        .setFooter({ text: await client.translate(`Requested by ${interaction.user.tag}`, interaction.guild?.id), iconURL: interaction.user.displayAvatarURL() })
+                        .setTimestamp()
+
+                        await interaction.editReply({ embeds: [embed] })
+                    }
+                    if((interaction.options as any).getSubcommand() == 'bans') {
+                        await interaction.deferReply({ ephemeral: true })
+
+                        const embed = new EmbedBuilder()
+                        .setTitle(await client.translate(`Bans`, interaction.guild?.id))
+                        .setColor(await interaction.client.embedColor(interaction.user))
+                        .setDescription(await client.translate(`Bans: ${interaction.guild?.bans.cache.size}`, interaction.guild?.id))
+                        .setFooter({ text: await client.translate(`Requested by ${interaction.user.tag}`, interaction.guild?.id), iconURL: interaction.user.displayAvatarURL() })
+                        .setTimestamp()
+
+                        await interaction.editReply({ embeds: [embed] })
+                    }
+                    if((interaction.options as any).getSubcommand() == 'members') {
+                        await interaction.deferReply({ ephemeral: true })
+
+                        const embed = new EmbedBuilder()
+                        .setTitle(await client.translate(`Members`, interaction.guild?.id))
+                        .setColor(await interaction.client.embedColor(interaction.user))
+                        .setDescription(await client.translate(`Members: ${interaction.guild?.members.cache.size}`, interaction.guild?.id))
+                        .setFooter({ text: await client.translate(`Requested by ${interaction.user.tag}`, interaction.guild?.id), iconURL: interaction.user.displayAvatarURL() })
+                        .setTimestamp()
+
+                        await interaction.editReply({ embeds: [embed] })
+                    }
                 }
-                if((interaction.options as any).getSubcommand() == 'premium') {
-                    const user = (interaction.options as any).getUser('user') || null
+                if((interaction.options as any).getSubcommandGroup() == 'premium') {
                     await interaction.deferReply({ ephemeral: true })
+                    if((interaction.options as any).getSubcommand() == 'info') {
+                    const user = (interaction.options as any).getUser('user') || null
 
                     if(user) {
+                    const data = await PremiumUser.findOne({ userID: user.id })
                     let is_prem = await client.checkPremium(user.id)
                     if(is_prem == false) is_prem = await client.translate(`They don't have a premium subscription`, interaction.guild?.id)
                     if(is_prem == 'cactus_not_in_gu_ld') is_prem = await client.translate(`They aren't in my [support server](https://discord.gg/azury) so I can't calculate`, interaction.guild?.id)
-                    if(is_prem == true) is_prem = await client.translate(`They have a premium subscription`, interaction.guild?.id)
+                    if(is_prem == true) is_prem = await client.translate(`They have a premium subscription - expires <t:${Math.floor((ms(data.expires)) / 1000)}:R>`, interaction.guild?.id)
                     
                       return interaction.editReply({ embeds: [new EmbedBuilder()
                         .setTitle(await client.translate(`Premium`, interaction.guild?.id))
@@ -241,7 +362,52 @@ const command: SlashCommand = {
                             .setTimestamp()
                             .setFooter({ text: `Cactus Bot`, iconURL: interaction.client.user?.displayAvatarURL() })
                             .setDescription(await client.translate(`**What is premium?** Check out the pricing at [cactus.townbots.co](https://cactus.townbots.co/pricing.html)\n・Premium allows you to have access to special features for a cheap price`, interaction.guild?.id))] })
-                        }    
+                        }  
+                    }
+                    if((interaction.options as any).getSubcommand() == 'redeem') {  
+                        const code = (interaction.options as any).getString('code')
+
+                        const dataCode = await PremiumCode.findOne({ code: code }) as any;
+                        if(!dataCode) return await interaction.editReply({ content: `This is an Invalid Premium-Code! Please try again later!` })
+
+                        const dataUser = await PremiumUser.findOne({ userID: interaction.user.id }) as any;
+                        if(dataUser) return await interaction.editReply({ content: `You already have a premium subscription!` })
+
+                        new PremiumUser({
+                            userID: interaction.user.id,
+                            expires: Date.now() + ms(dataCode.expires)
+                        }).save();
+
+                        await interaction.editReply({ content: `You have redeemed the code **${code}** which expires in ${dataCode.expires}!` });
+
+                        await dataCode.delete();
+                    }
+                    if((interaction.options as any).getSubcommand() == 'create') { 
+                        const expires = (interaction.options as any).getString('expires')
+                        if(!client.config.Authentication.Engineers.includes(interaction.user?.id)) return interaction.editReply({ content: 'You do not have permission to use this command!' });
+
+                        const code = Math.random().toString(36).substring(2, 6).toUpperCase() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase() + '-' + Math.random().toString(36).substring(2, 7).toUpperCase();
+
+                        new PremiumCode({
+                            code: code,
+                            expires: expires
+                        }).save()
+
+                        await interaction.editReply({ content: `You have created a new Premium-Code with the ID **${code}**, which expires in ${expires}` })
+                    }
+                    if((interaction.options as any).getSubcommand() == 'list-codes') { 
+                    if(!client.config.Authentication.Engineers.includes(interaction.user?.id)) return interaction.editReply({ content: 'You do not have permission to use this command!' });
+
+                    const data = await PremiumCode.find({}) as any;
+                    if(!data) return await interaction.editReply({ content: `There are no premium codes that are un-used!` })
+
+
+
+                    // reply with the codesMap
+                    await interaction.editReply({ content: data.map((code: any) => `**${code.code}** • Code-Duration: ${code.expires}`).join('\n') }).catch(() => {
+                        interaction.editReply({ content: 'There are no premium codes that are un-used!' })
+                    })
+                    }
                 }
                 if((interaction.options as any).getSubcommand() == 'channelinfo') {
                         await interaction.deferReply({ ephemeral: true })
@@ -486,6 +652,66 @@ const command: SlashCommand = {
                         })
 
                         await interaction.editReply({ embeds: [embed] }) 
+                    }
+                    if((interaction.options as any).getSubcommand() == 'avatar') {
+                        await interaction.deferReply({ ephemeral: true })
+                        const user = (interaction.options as any).getUser('user') || interaction.user
+                        const embed = new EmbedBuilder()
+                        .setTitle(await client.translate(`Avatar for`, interaction.guild?.id)+` ${user.tag}`)
+                        .setImage(user.displayAvatarURL({ dynamic: true, size: 2048 }))
+                        .setColor(await interaction.client.embedColor(user))
+                        .setTimestamp()
+                        .setFooter({ text: 'Cactus Bot', iconURL: interaction.client.user?.displayAvatarURL() })
+
+                        await interaction.editReply({ embeds: [embed] })
+                    }
+                    if((interaction.options as any).getSubcommand() == 'banner') {
+                        await interaction.deferReply({ ephemeral: true })
+                        const user = (interaction.options as any).getUser('user') || interaction.user
+                        
+                        // fetch the user's banner using discord raw api, using axios
+                        const banner = await axios.get(`https://discord.com/api/v9/users/${user.id}`, {
+                            headers: {
+                                "Authorization": `Bot ${client.token}`
+                            }
+                        }).then((res) => res.data)
+
+                        if(banner.banner) {
+                        const embed = new EmbedBuilder()
+                        .setTitle(await client.translate(`Banner for`, interaction.guild?.id)+` ${user.tag}`)
+                        .setImage(`https://cdn.discordapp.com/banners/${user.id}/${banner.banner}.png?size=2048`)
+                        .setColor(await interaction.client.embedColor(user))
+                        .setTimestamp()
+
+                        await interaction.editReply({ embeds: [embed] })
+                        } else {
+                            await interaction.editReply({ content: await client.translate(`This user doesn't have a banner`, interaction.guild?.id) })
+                        }
+                    }
+                    if((interaction.options as any).getSubcommand() == 'badges') {
+                        await interaction.deferReply({ ephemeral: true })
+                        const user = (interaction.options as any).getUser('user') || interaction.user
+                        const embed = new EmbedBuilder()
+                        .setTitle(await client.translate(`Badges for`, interaction.guild?.id)+` ${user.tag}`)
+                        .setDescription(await client.translate(`**Badges:**`, interaction.guild?.id)+` ${user.flags.toArray().length > 0 ? user.flags.toArray().join(', ') : await client.translate(`No badges`, interaction.guild?.id)}`)
+                        .setColor(await interaction.client.embedColor(user))
+                        .setTimestamp()
+                        .setFooter({ text: 'Cactus Bot', iconURL: interaction.client.user?.displayAvatarURL() })
+
+                        await interaction.editReply({ embeds: [embed] })
+                    }
+                    if((interaction.options as any).getSubcommand() == 'roles') {
+                        await interaction.deferReply({ ephemeral: true })
+                        const user = (interaction.options as any).getUser('user') || interaction.user
+                        const member = await interaction.guild?.members.fetch(user.id)
+                        const embed = new EmbedBuilder()
+                        .setTitle(await client.translate(`Roles for`, interaction.guild?.id)+` ${user.tag}`)
+                        .setDescription(member?.roles.cache.size > 25 ? member?.roles.cache.map((role: any) => `<@&${role.id}>`).slice(0, 25).join(', ') + ` and ${member?.roles.cache.size - 25} more` : member?.roles.cache.map((role: any) => `<@&${role.id}>`).join(', ').replace(/@@everyone/g, '') || await client.translate(`No roles`, interaction.guild?.id))
+                        .setColor(await interaction.client.embedColor(user))
+                        .setTimestamp()
+                        .setFooter({ text: 'Cactus Bot', iconURL: interaction.client.user?.displayAvatarURL() })
+
+                        await interaction.editReply({ embeds: [embed] })
                     }
                 }
         if((interaction.options as any).getSubcommand() == 'help') {

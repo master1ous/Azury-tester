@@ -5,6 +5,7 @@ import Discord from "discord.js";
 import RemindersModel from "../schemas/Reminder";
 import GiveawayModel from "../schemas/Giveaway";
 import ImagineModel from "../schemas/Imagine";
+import PremiumUser from "../schemas/PremiumUser";
 import ms from "ms";
 
 const event : BotEvent = {
@@ -13,6 +14,13 @@ const event : BotEvent = {
     execute: (client : Client) => {
 
         setInterval(async() => {
+        const premiums = await PremiumUser.find({})
+        premiums.forEach(async(premium) => {
+            if((premium.expires as any) <= Date.now()){
+                premium.delete()
+            }
+        })
+
         const imagines = await ImagineModel.find({})
         imagines.forEach(async(imagine) => {
             if((imagine.resetAt as any) <= Date.now()){

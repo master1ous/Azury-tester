@@ -15,7 +15,7 @@ const command: SlashCommand = {
     command: new SlashCommandBuilder()
     .setName("utility")
     .setDescription("Use the utility sub commands")
-    
+    .setDMPermission(false)
     .addSubcommand((subcommand) =>
         subcommand.setName('emoji')
             .setDescription('use the emoji command')

@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, ChannelType, TextChannel, EmbedBuilder, CommandInteraction, SlashCommandSubcommandBuilder, ChatInputCommandInteraction, ButtonBuilder, ModalActionRowComponentBuilder, Message, EmbedData, ButtonStyle } from "discord.js"
+import { SlashCommandBuilder, ChannelType, TextChannel, PermissionFlagsBits, EmbedBuilder, CommandInteraction, SlashCommandSubcommandBuilder, ChatInputCommandInteraction, ButtonBuilder, ModalActionRowComponentBuilder, Message, EmbedData, ButtonStyle } from "discord.js"
 import Discord from "discord.js";
 import { SlashCommand } from "../types";
 import WarningsModel from "../schemas/Warnings";
@@ -13,6 +13,8 @@ const command: SlashCommand = {
     command: new SlashCommandBuilder()
     .setName("admin")
     .setDescription("Use the admin sub commands")
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+    .setDMPermission(false)
     .addSubcommand((subcommand) =>
         subcommand.setName('embedbuilder')
         .setDescription('Create an embed')
@@ -197,9 +199,9 @@ const command: SlashCommand = {
     execute: async (interaction) => {
         const client = interaction.client
 
-        if (!(interaction.member as any).permissions.has('ADMINISTRATOR')) {
+        /*if (!(interaction.member as any).permissions.has('ADMINISTRATOR')) {
             return await interaction.reply({ content: 'You do not have permission to use this command', ephemeral: true })
-        }
+        }*/
 
         if ((interaction.options as any).getSubcommand() == 'snipe') {
             await interaction.deferReply({ ephemeral: false })

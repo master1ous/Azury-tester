@@ -8,6 +8,8 @@ const command: SlashCommand = {
     command: new SlashCommandBuilder()
     .setName("setup")
     .setDescription("Use the setup sub commands")
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
+    .setDMPermission(false)
     .addSubcommand((subcommand) =>
         subcommand.setName('sticky')
         .setDescription('Setup the sticky message system')
@@ -60,7 +62,7 @@ const command: SlashCommand = {
 
     execute: async (interaction) => {
         const client = interaction.client
-        if(!(interaction.member.permissions as any).has(PermissionFlagsBits.Administrator)) return interaction.reply({ content: `You need to have the \`ADMINISTRATOR\` permission to use this command`, ephemeral: true })
+        //if(!(interaction.member.permissions as any).has(PermissionFlagsBits.Administrator)) return interaction.reply({ content: `You need to have the \`ADMINISTRATOR\` permission to use this command`, ephemeral: true })
 
         if((interaction.options as any).getSubcommand() == 'chatgpt') {
             const channel = (interaction.options as any).getChannel('channel');

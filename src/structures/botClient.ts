@@ -28,7 +28,7 @@ export class BotClient extends Client {
             presence: {
                 activities: [
                     {
-                        name: "Booting up...",
+                        name: "booting up...",
                         type: ActivityType.Playing,
                     },
                 ],
