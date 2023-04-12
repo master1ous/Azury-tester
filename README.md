@@ -9,4 +9,5 @@ Azury tester is a simple yet powerful discord utility bot
 ## Discord
 - [x] [Azury](https://discord.gg/azury)
 
-## Hosting
+## End of azury
+we decided to delete azury, I masterious will delete my account, you wont get code help, but enjoy.
