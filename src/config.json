@@ -1,9 +1,9 @@
 {
     "Authentication": {
-        "Token": "MTA3NDMwODA0Nzk2ODY3Nzk5OQ.GGyZq2.1OiLLA5pxQuO15rnGXXxJsK9Rer06LoJFJfRiE",
-        "Client_ID": "1074308047968677999",
-        "Replicate": "Token 46642b22b4ed7d7901d87cd4fc0f877370128ead",
-        "OpenAI": "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",
+        "Token": "",
+        "Client_ID": "",
+        "Replicate": "Token ADD-HERE-KEEP-token-AT-BEGINNING",
+        "OpenAI": "",
         "Engineers": ["1078770321240375347", "693553429380857978", "791957021728702464", "1033733468078735451","862621966317912084"]
     },
     "Sharding": {
@@ -16,13 +16,13 @@
         "Type": 2
     },
     "Database": {
-        "Uri": "mongodb+srv://HXM8aN7u4Eaz3cM9:Zt5bTvkJIsrka4xL@cluster0.ip52fvk.mongodb.net",
-        "Collection": "cactus"
+        "Uri": "",
+        "Collection": ""
     },
     "Information": {
         "Version": "2.0.0"
     },
     "Keys": {
-        "Weather": "a36649c8106c46549fa00826232802"
+        "Weather": ""
     }
 }
