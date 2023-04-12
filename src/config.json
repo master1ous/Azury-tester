@@ -16,8 +16,8 @@
         "Type": 2
     },
     "Database": {
-        "Uri": "mongodb+srv://euni_az3:Cf32JT3XvOwCPhgA@cluster0.wuqry0o.mongodb.net",
-        "Collection": "azury_testers"
+        "Uri": "mongodb+srv://HXM8aN7u4Eaz3cM9:Zt5bTvkJIsrka4xL@cluster0.ip52fvk.mongodb.net",
+        "Collection": "cactus"
     },
     "Information": {
         "Version": "2.0.0"

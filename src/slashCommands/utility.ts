@@ -201,6 +201,15 @@ const command: SlashCommand = {
                                 .setRequired(true)
                                 .setDescription('Enter your reminder')
                         )
+                        .addStringOption(option =>
+                            option.setName('allow_subscribers')
+                            .setRequired(false)
+                            .setDescription('Allow people to be able to subscribe')
+                            .addChoices(
+                                { name: 'Yes', value: 'yes' },
+                                { name: 'No', value: 'no' },
+                            )
+                        )
                 )
                 .addSubcommand((subcommand) =>
                     subcommand.setName('clone')
@@ -620,18 +629,19 @@ const command: SlashCommand = {
                 await interaction.editReply({ content: `${await client.translate(`Created a new reminder (${id}) which loops everytime it ends:`, interaction.guild?.id)}\n<:singlereply_white:1078059852296896562> ${reminder} • ends **${ms((msTime as any), { long: true })}**` })
             }
             if((interaction.options as any).getSubcommand() == 'create') {
-                await interaction.deferReply({ ephemeral: true })
                 const time = (interaction.options as any).getString('time')
                 const reminder = (interaction.options as any).getString('reminder')
+                const allow_subscribers = (interaction.options as any).getString('allow_subscribers') || 'no';
 
                 const msTime = ms(time)
+                const times = Date.now() + msTime;
 
                 const id = Math.random().toString(36).substring(2, 5) + Math.random().toString(36).substring(2, 5)
 
                 const reminderModel = new RemindersModel({
                     userID: interaction.user.id,
                     reminderID: id,
-                    time: Date.now() + msTime,
+                    time: times,
                     date: msTime,
                     reminder: reminder,
                     createdAt: new Date(Date.now()).toLocaleString(),
@@ -641,7 +651,27 @@ const command: SlashCommand = {
 
                 await reminderModel.save()
                 
+                if(allow_subscribers == 'no') {
+                await interaction.deferReply({ ephemeral: true })
                 await interaction.editReply({ content: `${await client.translate(`Created a new reminder (${id}):`, interaction.guild?.id)}\n<:singlereply_white:1078059852296896562> ${reminder} • ends **${ms((msTime as any), { long: true })}**` })
+                } else {
+                    await interaction.deferReply({ ephemeral: false })
+                    const row = new ActionRowBuilder<ButtonBuilder>()
+                    .addComponents(
+                        new ButtonBuilder()
+                        .setStyle(ButtonStyle.Primary)
+                        .setLabel('Subscribe')
+                        .setCustomId(`rem_${id}`)
+                    )
+                    
+
+                    const embed = new Discord.EmbedBuilder()
+                    .setTitle(`Reminder set to end <t:${Math.floor((times as any) / 1000)}:R>`)
+                    .setDescription(reminder)
+                    .setColor(await interaction.client.embedColor(interaction.user))
+
+                    await interaction.editReply({ embeds: [embed], components: [row] })
+                }
             } else if((interaction.options as any).getSubcommand() == 'list') {
                 await interaction.deferReply({ ephemeral: true })
                 const reminders = await RemindersModel.find({ userID: interaction.user.id })

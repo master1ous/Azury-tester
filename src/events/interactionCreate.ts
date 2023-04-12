@@ -3,6 +3,7 @@ import { BotEvent } from "../types";
 
 import settingsModule from "../schemas/Settings";
 import giveawayModule from "../schemas/Giveaway";
+import reminderModule from "../schemas/Reminder";
 import { threadId } from "worker_threads";
 
 const event : BotEvent = {
@@ -232,6 +233,35 @@ if(btnHtp && btnLabel && BtnEmoji){
         }
 
         if (interaction.isButton()) {
+            if(interaction.customId.startsWith('rem_')) {
+                await interaction.deferReply({ ephemeral: true})
+                const remID = interaction.customId.replace('rem_', '')
+                const data = await reminderModule.findOne({ reminderID: remID })
+                if(!data) {
+                    await interaction.editReply({ content: `Seems this reminder is nolonger valid or has been deleted!` });
+                    return;
+                }
+                const dataAll = await reminderModule.find({ userID: interaction.user.id })
+                if(dataAll.some((d) => d.reminder === data.reminder)) {
+                    await interaction.editReply({ content: `You already have a reminder with the same message!` });
+                    return;
+                }
+
+                const id = Math.random().toString(36).substring(2, 5) + Math.random().toString(36).substring(2, 5)
+
+                const reminderData = new reminderModule({
+                    userID: interaction.user.id,
+                    reminder: data.reminder,
+                    reminderID: id,
+                    time: data.time,
+                    date: data.date,
+                    createdAt: new Date(Date.now()).toLocaleString(),
+                    channel: interaction.channel.id,
+                    loop: false,
+                }).save()
+
+                await interaction.editReply({ content: `✅ You have subscribed to <@${data.userID}>'s reminder! To unsubscribe use </utility reminder delete:1085749943668592714> including the ID \`${id}\`` })
+            }
             if(interaction.customId.startsWith('giveaway_')) {
                 const id = interaction.customId.replace('giveaway_', '')
 
