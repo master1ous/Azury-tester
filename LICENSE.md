@@ -2,7 +2,7 @@
 
 > Version 1.2, February 2021
 
-> Copyright (C) 2023 Azury
+> Copyright (C) 2023 Tejas Lamba
 
 > DON'T BE A DICK PUBLIC LICENSE
 > TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
