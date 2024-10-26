@@ -13,4 +13,4 @@ Azury tester is a simple yet powerful discord utility bot
 -- We are happy to take pull requests 😀 
 
 ## End of azury
-we decided to delete azury, I masterious will delete my account, you wont get code help, but enjoy.
+Code is nolonger supported, any pull requests may or may not be accepted.
